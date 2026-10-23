@@ -1,0 +1,605 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Board Bite: INBDE study game</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#E8F0EE;--surface:#FFFFFF;--surface-2:#F2F7F6;--ink:#123B37;--muted:#4A6864;--line:#C3D6D2;
+  --accent:#1D6F64;--accent-ink:#FFFFFF;--gold:#8A6508;--gold-soft:#F6E8BE;
+  --ok:#2B7A4B;--ok-soft:#DCF1E3;--bad:#B3412E;--bad-soft:#F8E1DB;--enamel:#FFFDF5;
+  color-scheme:light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0E1A19;--surface:#162624;--surface-2:#1C302D;--ink:#E2EEEB;--muted:#9AB5B0;--line:#2D4542;
+    --accent:#5CC0B0;--accent-ink:#0B1B19;--gold:#EBC45E;--gold-soft:#3A2F12;
+    --ok:#6CCB8E;--ok-soft:#173A26;--bad:#F08A72;--bad-soft:#41201A;--enamel:#F4F1E6;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0E1A19;--surface:#162624;--surface-2:#1C302D;--ink:#E2EEEB;--muted:#9AB5B0;--line:#2D4542;
+  --accent:#5CC0B0;--accent-ink:#0B1B19;--gold:#EBC45E;--gold-soft:#3A2F12;
+  --ok:#6CCB8E;--ok-soft:#173A26;--bad:#F08A72;--bad-soft:#41201A;--enamel:#F4F1E6;
+  color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.55 "Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif}
+.wrap{max-width:720px;margin:0 auto;padding:18px 18px 56px}
+.display{font-family:"Bricolage Grotesque","Avenir Next","Segoe UI",system-ui,sans-serif}
+header.top{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+.brand{font-family:"Bricolage Grotesque","Avenir Next",system-ui,sans-serif;font-weight:800;font-size:1.3rem;letter-spacing:-.02em;background:none;border:0;color:var(--ink);padding:0;cursor:pointer}
+.mastery-text{color:var(--muted);font-size:.93rem;text-align:right}
+.arch{width:100%;height:auto;display:block;margin:10px 0 2px}
+.tooth{fill:transparent;stroke:var(--line);stroke-width:1.2;stroke-dasharray:3 2;transition:fill .5s,stroke .5s;transform-box:fill-box;transform-origin:center}
+.tooth.on{fill:var(--enamel);stroke:var(--ink);stroke-dasharray:none}
+.tooth.pop{animation:pop .7s ease-out}
+@keyframes pop{0%{transform:scale(1)}45%{transform:scale(1.25)}100%{transform:scale(1)}}
+h1{font-family:"Bricolage Grotesque","Avenir Next",system-ui,sans-serif;font-size:clamp(2.3rem,8vw,3.6rem);line-height:1;letter-spacing:-.035em;margin:30px 0 12px;font-weight:800}
+.lede{max-width:54ch;color:var(--muted);margin:0 0 30px}
+h2{font-family:"Bricolage Grotesque","Avenir Next",system-ui,sans-serif;font-size:1.15rem;margin:0 0 10px;font-weight:800}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1.5px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:7px 13px;font:inherit;font-size:.9rem;cursor:pointer;line-height:1.2}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.chip .n{opacity:.7;margin-left:6px;font-size:.85em}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.linkbtn{background:none;border:0;padding:4px 0;font:inherit;font-size:.9rem;color:var(--accent);cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.modes{margin-top:34px;border-top:2px solid var(--ink)}
+.mode{display:grid;grid-template-columns:1fr auto;gap:4px 18px;align-items:center;padding:20px 0;border-bottom:1px solid var(--line)}
+.mode h3{font-family:"Bricolage Grotesque","Avenir Next",system-ui,sans-serif;font-size:1.5rem;margin:0;letter-spacing:-.015em;font-weight:800}
+.mode p{margin:0;color:var(--muted);font-size:.96rem;max-width:46ch}
+.mode .btn{grid-row:1 / span 2;grid-column:2}
+.btn{font:inherit;font-weight:700;border-radius:12px;padding:12px 20px;border:0;cursor:pointer;background:var(--accent);color:var(--accent-ink);white-space:nowrap}
+.btn.ghost{background:transparent;color:var(--ink);border:1.5px solid var(--line)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.weak{margin-top:26px;padding:16px 18px;background:var(--bad-soft);border-radius:14px;display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap}
+.weak p{margin:0}
+.note{margin-top:34px;color:var(--muted);font-size:.86rem;max-width:60ch}
+.hint{color:var(--bad);font-size:.9rem;margin:10px 0 0}
+.hud{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:22px 0 8px}
+.lives{display:flex;gap:4px}
+.lives svg{width:22px;height:26px}
+.score{font-size:.95rem;color:var(--muted)}
+.score .num{font-family:"Bricolage Grotesque","Avenir Next",system-ui,sans-serif;font-weight:800;font-size:1.7rem;color:var(--ink);margin-right:4px}
+.streak{font-family:"Bricolage Grotesque","Avenir Next",system-ui,sans-serif;font-weight:800;font-size:1.25rem;padding:2px 10px;border-radius:8px;color:var(--muted);min-width:3.2em;text-align:center}
+.streak.hot{background:var(--gold-soft);color:var(--gold)}
+.speed{height:5px;background:var(--line);border-radius:3px;overflow:hidden}
+.speed-fill{height:100%;background:var(--gold);transform-origin:left;animation:drain 10s linear forwards}
+.speed.stop .speed-fill{animation-play-state:paused}
+@keyframes drain{from{transform:scaleX(1)}to{transform:scaleX(0)}}
+.meta{display:flex;justify-content:space-between;gap:10px;color:var(--muted);font-size:.88rem;margin:16px 0 6px}
+.qtext{font-family:"Bricolage Grotesque","Avenir Next",system-ui,sans-serif;font-size:clamp(1.3rem,4.4vw,1.7rem);line-height:1.25;font-weight:600;letter-spacing:-.01em;margin:0 0 18px}
+.options{display:grid;gap:10px}
+.opt{display:flex;gap:12px;align-items:flex-start;text-align:left;font:inherit;color:var(--ink);background:var(--surface);border:1.5px solid var(--line);border-radius:14px;padding:13px 14px;cursor:pointer}
+.opt:hover:not(:disabled){border-color:var(--ink)}
+.opt:disabled{cursor:default}
+.key{flex:none;width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:.82rem;background:var(--surface-2);border:1px solid var(--line);margin-top:1px}
+.opt.right{background:var(--ok-soft);border-color:var(--ok)}
+.opt.right .key{background:var(--ok);color:var(--surface);border-color:var(--ok)}
+.opt.wrong{background:var(--bad-soft);border-color:var(--bad)}
+.opt.wrong .key{background:var(--bad);color:var(--surface);border-color:var(--bad)}
+.feedback{margin-top:16px;padding:16px 18px;border-left:4px solid var(--ok);background:var(--surface);border-radius:0 14px 14px 0}
+.feedback.miss{border-left-color:var(--bad)}
+.verdict{font-family:"Bricolage Grotesque","Avenir Next",system-ui,sans-serif;font-weight:800;font-size:1.2rem;margin:0 0 6px}
+.feedback p{margin:0 0 8px}
+.hookbox{margin:12px 0 0;padding:10px 13px;background:var(--gold-soft);border-radius:10px}
+.hookbox strong{display:block;font-size:.85rem;color:var(--gold)}
+.actions{display:flex;gap:10px;justify-content:flex-end;margin-top:16px;flex-wrap:wrap}
+.card{background:var(--surface);border:1.5px solid var(--line);border-radius:18px;padding:22px 20px;min-height:260px;margin-top:8px}
+.answer{font-family:"Bricolage Grotesque","Avenir Next",system-ui,sans-serif;font-size:1.35rem;font-weight:800;color:var(--ok);margin:6px 0 10px;line-height:1.25}
+.pips{display:flex;gap:4px;align-items:center}
+.pip{width:8px;height:8px;border-radius:50%;border:1.5px solid var(--muted)}
+.pip.f{background:var(--accent);border-color:var(--accent)}
+.match{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.col{display:grid;gap:10px;align-content:start}
+.tile{font:inherit;font-size:.95rem;line-height:1.3;text-align:left;padding:12px;border-radius:12px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer;min-height:56px}
+.tile.term{font-weight:700}
+.tile.sel{border-color:var(--accent);box-shadow:inset 0 0 0 1.5px var(--accent)}
+.tile.done{background:var(--ok-soft);border-color:var(--ok);opacity:.55;cursor:default}
+.tile.err{border-color:var(--bad);background:var(--bad-soft);animation:shake .35s}
+@keyframes shake{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+.big{font-family:"Bricolage Grotesque","Avenir Next",system-ui,sans-serif;font-size:clamp(2.6rem,10vw,4rem);font-weight:800;letter-spacing:-.03em;line-height:1;margin:6px 0}
+.stats{display:flex;gap:28px;flex-wrap:wrap;color:var(--muted);margin:12px 0 4px}
+.stats b{display:block;color:var(--ink);font-size:1.25rem}
+.badge{display:inline-block;background:var(--gold-soft);color:var(--gold);font-weight:700;padding:3px 10px;border-radius:999px;font-size:.88rem}
+.missed{list-style:none;padding:0;margin:14px 0 0;display:grid;gap:12px}
+.missed li{background:var(--surface);border-radius:12px;padding:14px 16px;border:1px solid var(--line)}
+.missed .a{color:var(--ok);font-weight:700;margin:4px 0}
+.missed .h{color:var(--muted);font-size:.92rem}
+@media (max-width:520px){
+  .mode{grid-template-columns:1fr}
+  .mode .btn{grid-row:auto;grid-column:1;justify-self:start;margin-top:8px}
+  .tile{font-size:.88rem;padding:10px}
+}
+@media (prefers-reduced-motion: reduce){
+  .tooth.pop,.tile.err{animation:none}
+  .tooth{transition:none}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <button class="brand" id="brand" type="button" aria-label="Board Bite home">Board Bite</button>
+    <div class="mastery-text" id="masteryText"></div>
+  </header>
+  <svg class="arch" id="arch" role="img" aria-label="Mastery smile"></svg>
+  <main id="app"></main>
+</div>
+<script>
+const CATS={
+  pharm:"Pharmacology",anat:"Head & neck anatomy",tooth:"Dental anatomy & development",path:"Oral pathology",
+  perio:"Periodontics",endo:"Endodontics",resto:"Restorative & materials",pros:"Prosthodontics",
+  surg:"Surgery & emergencies",peds:"Pediatrics & ortho",xray:"Radiology & infection control",
+  ethics:"Ethics, research & public health",bio:"Biomedical science"
+};
+/* [category, question, [correct, wrong, wrong, wrong], explanation, memory hook] */
+const Q=[
+["pharm","How many milligrams of lidocaine are in one 1.8 mL cartridge of 2% lidocaine?",["36 mg","18 mg","20 mg","72 mg"],"2% means 2 g per 100 mL, which is 20 mg/mL. 20 mg/mL × 1.8 mL = 36 mg.","Percent × 10 = mg/mL. So 2% → 20 mg/mL."],
+["pharm","First-line drug for anaphylaxis in an adult dental patient?",["Epinephrine 0.3 mg IM (1 mg/mL)","Diphenhydramine 50 mg orally","Hydrocortisone 100 mg IV","Albuterol, 2 puffs"],"Epinephrine reverses bronchospasm and hypotension. Give 0.3 mg of the 1 mg/mL (1:1,000) solution IM in the anterolateral thigh and repeat every 5–15 minutes as needed. Antihistamines and steroids are only adjuncts.","Anaphylaxis: epi first, everything else second."],
+["pharm","Standard AHA antibiotic prophylaxis for an adult with a prosthetic heart valve and no penicillin allergy?",["Amoxicillin 2 g orally, 30–60 min before","Amoxicillin 500 mg three times a day for 7 days after","Penicillin VK 1 g after the procedure","Clindamycin 600 mg orally, 1 hour before"],"A single dose of amoxicillin 2 g, 30–60 minutes before the procedure. If it was forgotten, it can be given up to 2 hours after.","2 grams, 1 dose, before you start."],
+["pharm","Under the 2021 AHA guidance, which drug is no longer recommended for endocarditis prophylaxis?",["Clindamycin","Azithromycin 500 mg","Doxycycline 100 mg","Cephalexin 2 g"],"Clindamycin was dropped because of more frequent and severe adverse reactions, including C. difficile infection. Penicillin-allergic patients can take azithromycin, clarithromycin, or doxycycline (or cephalexin if there’s no history of anaphylaxis, angioedema, or urticaria with penicillin).","Clinda caused C. diff, so it got cut."],
+["pharm","Which drug reverses soft-tissue numbness after local anesthesia?",["Phentolamine mesylate","Flumazenil","Naloxone","Atropine"],"Phentolamine is an alpha-adrenergic blocker. It counters the vasoconstrictor, so blood flow increases and the anesthetic leaves the site faster.","Phentolamine = “Phinish the numbness.”"],
+["pharm","Which agent reverses benzodiazepine sedation?",["Flumazenil","Naloxone","Physostigmine","Neostigmine"],"Flumazenil is a competitive antagonist at the benzodiazepine site of the GABA-A receptor. Naloxone reverses opioids.","Naloxone → Narcotics. Flumazenil → the other one (benzos)."],
+["pharm","Methemoglobinemia is most associated with which local anesthetic?",["Prilocaine","Bupivacaine","Mepivacaine","Lidocaine"],"Prilocaine’s metabolite o-toluidine oxidizes hemoglobin to methemoglobin. Topical benzocaine can also cause it. Avoid prilocaine in patients with methemoglobinemia, sickle cell anemia, or hypoxia.","Prilocaine turns patients purple (cyanosis)."],
+["pharm","Articaine is an amide, yet much of it is broken down in the plasma. Why?",["It has an ester side group hydrolyzed by plasma esterases","It is metabolized only by the kidney","It binds irreversibly to albumin","It contains a benzene ring"],"Articaine has a thiophene ring and an ester side chain, so it is metabolized by plasma esterases as well as the liver, giving it a short half-life.","Articaine: the amide with an ester side hustle."],
+["pharm","Why are tetracyclines avoided in children under 8 and in pregnancy?",["They bind calcium in developing teeth and cause permanent staining","They cause gingival enlargement","They only affect primary enamel thickness","They block vitamin K synthesis"],"Tetracyclines chelate calcium and are incorporated into mineralizing dentin and enamel, causing intrinsic yellow-gray-brown discoloration.","Tetracycline rides calcium into the tooth."],
+["pharm","Chest pain consistent with angina starts during treatment. First drug to give?",["Nitroglycerin 0.4 mg sublingual","Epinephrine 0.3 mg IM","Albuterol inhaler","Diphenhydramine 25 mg"],"Nitroglycerin dilates veins, reducing preload and oxygen demand. Repeat every 5 minutes up to 3 doses; if pain persists, treat as a possible MI and call EMS. Don’t give it if blood pressure is low or a PDE-5 inhibitor was taken recently.","3 nitro in 15 minutes, still pain? Call 911."],
+["pharm","Which lab value monitors warfarin therapy before an extraction?",["INR","aPTT","Platelet count","Hemoglobin A1c"],"Warfarin inhibits vitamin K–dependent factors (II, VII, IX, X). The INR standardizes the prothrombin time; check it close to the day of surgery.","WEPT: Warfarin, Extrinsic pathway, PT/INR."],
+["pharm","Which patient has the highest risk of medication-related osteonecrosis of the jaw (MRONJ)?",["IV zoledronic acid for metastatic cancer","Oral alendronate for 2 years for osteoporosis","Oral calcium and vitamin D","A short course of prednisone"],"Risk is highest with high-potency antiresorptives (IV zoledronic acid, denosumab) at oncologic doses. Oral bisphosphonates for osteoporosis carry a much lower risk.","IV + cancer dose = highest jaw danger."],
+["pharm","How do local anesthetics block nerve conduction?",["They block voltage-gated sodium channels","They block potassium efflux","They open chloride channels","They block acetylcholine at the synapse"],"The un-ionized base crosses the nerve membrane; inside, the ionized form binds sodium channels and prevents depolarization. Inflamed (acidic) tissue leaves less base available, so anesthesia fails more often there.","No sodium, no signal. Acid = anesthesia fails."],
+["pharm","A patient on propranolol receives epinephrine in local anesthetic. What’s the concern?",["Hypertension with reflex bradycardia","Severe hypotension","Methemoglobinemia","Malignant hyperthermia"],"With beta receptors blocked by a nonselective beta-blocker, epinephrine acts on alpha-1 receptors unopposed. Blood pressure rises and triggers reflex bradycardia. Limit epinephrine and monitor vitals.","Nonselective beta-block + epi = alpha unopposed."],
+
+["anat","Taste from the anterior two-thirds of the tongue travels with the lingual nerve but belongs to which nerve?",["Chorda tympani (CN VII)","Lingual nerve (CN V3)","Glossopharyngeal (CN IX)","Hypoglossal (CN XII)"],"The lingual nerve (V3) carries general sensation. The chorda tympani branch of the facial nerve travels with it, carrying taste and parasympathetic fibers to the submandibular and sublingual glands.","V3 feels it, VII tastes it."],
+["anat","The parotid (Stensen) duct opens opposite which tooth?",["Maxillary second molar","Mandibular first molar","Maxillary first premolar","Mandibular second premolar"],"It crosses the masseter, pierces the buccinator, and opens at the parotid papilla on the buccal mucosa opposite the maxillary second molar.","Stensen → Second molar."],
+["anat","Which muscle protrudes the mandible and pulls the TMJ disc forward?",["Lateral pterygoid","Medial pterygoid","Masseter","Temporalis (posterior fibers)"],"The lateral pterygoid is the muscle of mastication that helps open the jaw; it protrudes and moves the mandible to the opposite side. Posterior temporalis fibers retrude.","Lateral = Lets it open."],
+["anat","What gives motor innervation to the buccinator?",["Facial nerve (CN VII)","Long buccal nerve (CN V3)","Hypoglossal nerve","Glossopharyngeal nerve"],"The buccinator is a muscle of facial expression, so the facial nerve moves it. The long buccal nerve (V3) only provides sensation to the cheek and buccal gingiva of mandibular molars.","Buccal nerve feels; facial nerve moves."],
+["anat","Which injection carries the greatest risk of hematoma from the pterygoid venous plexus?",["Posterior superior alveolar (PSA) block","Inferior alveolar nerve block","Nasopalatine block","Infraorbital block"],"The PSA needle advances up, back, and in toward the pterygoid plexus. Overinsertion can puncture it, causing a rapidly forming hematoma.","PSA → Plexus. Don’t go too deep."],
+["anat","An infection in the upper lip “danger triangle” can spread directly to the:",["Cavernous sinus","Sigmoid sinus","Submandibular space","Maxillary sinus"],"Facial and ophthalmic veins in this area communicate with the cavernous sinus and allow backward flow, so infection can cause cavernous sinus thrombosis.","Danger triangle → brain, via the cavernous sinus."],
+["anat","Which tongue muscle is NOT innervated by the hypoglossal nerve?",["Palatoglossus","Genioglossus","Styloglossus","Hyoglossus"],"All tongue muscles except palatoglossus are supplied by CN XII. Palatoglossus is supplied by the vagus nerve via the pharyngeal plexus.","Palato- belongs with the palate muscles: vagus."],
+["anat","During an IANB, the needle goes too far posterior into the parotid gland. Likely result?",["Transient facial nerve paralysis","Permanent lingual nerve damage","Lateral pterygoid trismus","Anesthesia of the upper lip"],"Facial nerve branches run through the parotid. Anesthetic there causes temporary one-sided facial paralysis (including inability to close the eye) lasting as long as the anesthetic. Protect the eye.","Too far back → parotid → face droops (temporarily)."],
+["anat","Ludwig’s angina involves which spaces bilaterally?",["Submandibular, sublingual, and submental","Buccal, canine, and infraorbital","Retropharyngeal only","Masseteric and pterygomandibular"],"Ludwig’s angina is a rapidly spreading cellulitis, often from mandibular molars, that elevates the tongue and threatens the airway. Securing the airway is the priority.","Ludwig = the three S spaces under the jaw, both sides."],
+["anat","Lymph from the tip of the tongue drains first to which nodes?",["Submental nodes","Parotid nodes","Occipital nodes","Supraclavicular nodes"],"The tip drains to submental nodes, the lateral tongue to submandibular nodes, and the posterior third to deep cervical nodes.","Tip → submental: both at the very front."],
+
+["tooth","In the Universal system, tooth #8 is the:",["Maxillary right central incisor","Maxillary left central incisor","Mandibular right central incisor","Maxillary right canine"],"#1 is the maxillary right third molar, counting across to #16 (maxillary left third molar), then #17 (mandibular left third molar) around to #32 (mandibular right third molar).","Start upper right at #1; count to the midline: #8 and #9 are the upper centrals."],
+["tooth","The cusp of Carabelli is found on which tooth?",["Maxillary first molar, mesiolingual cusp","Maxillary second molar, distolingual cusp","Mandibular first molar, mesiobuccal cusp","Maxillary first premolar, lingual cusp"],"It’s a fifth cusp or tubercle on the lingual surface of the mesiolingual cusp of the maxillary first molar (also seen on the primary maxillary second molar).","Carabelli: upper 1st molar, mesiolingual."],
+["tooth","Which premolar most often has two roots?",["Maxillary first premolar","Maxillary second premolar","Mandibular first premolar","Mandibular second premolar"],"The maxillary first premolar usually has a buccal and a palatal root. The maxillary second premolar usually has one root.","Max 1st premolar: first in line for two roots."],
+["tooth","In the Universal system for primary teeth, tooth A is the:",["Maxillary right second molar","Maxillary right central incisor","Mandibular right second molar","Maxillary left second molar"],"Primary teeth use A–T along the same path as permanent teeth: A is the maxillary right second molar, J the maxillary left second molar, K the mandibular left second molar, T the mandibular right second molar.","Same path as #1 → #32, just letters."],
+["tooth","Which permanent tooth usually erupts first?",["Mandibular first molar","Maxillary central incisor","Mandibular canine","Maxillary first premolar"],"The mandibular first molar typically erupts around age 6–7. In general, mandibular teeth erupt before their maxillary counterparts.","The “6-year molar.” Lowers lead."],
+["tooth","What determines the number, size, and shape of the roots?",["Hertwig’s epithelial root sheath","The dental lamina","The stellate reticulum","Epithelial rests of Malassez"],"HERS forms from the inner and outer enamel epithelium and guides root formation. Its remnants become the rests of Malassez, which can later give rise to radicular cysts.","HERS shapes the roots; its leftovers rest in the PDL."],
+["tooth","Enamel-forming ameloblasts are derived from:",["Ectoderm (oral epithelium)","Neural crest ectomesenchyme","Mesoderm","Endoderm"],"Enamel is the only dental tissue from ectoderm. Dentin, pulp, cementum, and PDL come from neural crest–derived ectomesenchyme.","Enamel = Ectoderm."],
+["tooth","Mature enamel is about what percent inorganic by weight?",["96%","70%","45%","85%"],"Enamel is about 96% mineral, dentin about 70%, and cementum about 45–50%.","96 → 70 → 45: enamel, dentin, cementum."],
+["tooth","Which root of the mandibular first molar usually has two canals?",["Mesial root","Distal root","Lingual root","Palatal root"],"The mandibular first molar usually has two roots: the mesial (mesiobuccal and mesiolingual canals) and the distal (one, sometimes two canals).","Mesial = Multiple."],
+["tooth","Which permanent tooth has the longest root?",["Maxillary canine","Mandibular canine","Maxillary central incisor","Mandibular first molar"],"The maxillary canine has the longest root in the dentition, making it a strong abutment at the corner of the arch.","The canine is the cornerstone: deepest foundation."],
+["tooth","Compared with permanent molars, primary molars have:",["Thinner enamel and relatively larger pulp horns","Thicker enamel and smaller pulps","Longer root trunks","Less cervical constriction"],"Primary molars have thin enamel, prominent pulp horns (especially mesial), marked cervical constriction, short root trunks, and flared roots that make room for successors.","Primary = thin shell, big pulp, flared roots."],
+
+["path","Most common salivary gland tumor overall:",["Pleomorphic adenoma","Warthin tumor","Mucoepidermoid carcinoma","Adenoid cystic carcinoma"],"Pleomorphic adenoma is benign, most often in the parotid, and presents as a slow-growing painless mass. It can recur if incompletely removed.","Pleomorphic = plenty (most common)."],
+["path","Most common malignant salivary gland tumor:",["Mucoepidermoid carcinoma","Adenoid cystic carcinoma","Acinic cell carcinoma","Polymorphous adenocarcinoma"],"Mucoepidermoid carcinoma contains mucous, epidermoid, and intermediate cells. Adenoid cystic carcinoma is known for perineural invasion.","Malignant + Most common = MEC."],
+["path","Multiple odontogenic keratocysts suggest which syndrome?",["Nevoid basal cell carcinoma (Gorlin) syndrome","Gardner syndrome","Peutz-Jeghers syndrome","Cleidocranial dysplasia"],"Gorlin syndrome (PTCH1 mutation) features multiple OKCs, basal cell carcinomas, palmar/plantar pits, calcified falx cerebri, and bifid ribs.","Gorlin: Got lots of keratocysts."],
+["path","A dentigerous cyst attaches to the tooth at the:",["Cementoenamel junction of an unerupted tooth","Apex of a nonvital tooth","Lateral root of a vital tooth","Furcation of a molar"],"Fluid collects between the reduced enamel epithelium and the crown, so the cyst surrounds the crown and attaches at the CEJ. Mandibular third molars are the most common site.","Dentigerous = “tooth-bearing”: it holds the crown."],
+["path","A “ground glass” radiographic appearance is classic for:",["Fibrous dysplasia","Paget disease of bone","Osteosarcoma","Cherubism"],"Fibrous dysplasia replaces bone with fibrous tissue and woven bone that blends into normal bone without distinct borders. Polyostotic disease with café-au-lait spots and endocrine problems is McCune-Albright syndrome.","Fibrous = frosted glass."],
+["path","“Cotton wool” radiopacities, hypercementosis, and very high alkaline phosphatase suggest:",["Paget disease of bone","Fibrous dysplasia","Hyperparathyroidism","Osteopetrosis"],"Paget disease is disorganized bone remodeling in older adults. The maxilla may enlarge so dentures stop fitting, and serum alkaline phosphatase is markedly elevated.","Paget = Puffy cotton + Pricey alk phos."],
+["path","Pemphigus vulgaris is caused by autoantibodies against:",["Desmoglein 3 (desmosomes)","Hemidesmosome proteins (BP180)","Type VII collagen","Keratin 5"],"Loss of desmosome adhesion causes intraepithelial (suprabasilar) acantholysis with Tzanck cells and a positive Nikolsky sign. It can be fatal without treatment.","Pemphigus splits inside the epithelium."],
+["path","In mucous membrane pemphigoid, where does the split occur?",["Subepithelial, at the basement membrane","Suprabasilar, within the epithelium","Within the spinous layer","Deep in the submucosa"],"Autoantibodies target hemidesmosome components, so the entire epithelium lifts off. Watch for eye involvement (symblepharon), which can lead to blindness.","PemphiGOID: the whole epithelium is GOne."],
+["path","Oral hairy leukoplakia on the lateral tongue is caused by:",["Epstein-Barr virus","Human papillomavirus 16","Candida albicans","Herpes simplex virus 1"],"White, corrugated, non-removable plaques on the lateral tongue, usually in immunosuppressed patients (classically HIV). It is not premalignant.","Hairy leukoplakia: EBV, lateral tongue, low immunity."],
+["path","Which white or red lesion carries the highest risk of malignancy?",["Erythroplakia","Leukoplakia","Linea alba","Leukoedema"],"Most erythroplakias show severe dysplasia, carcinoma in situ, or invasive carcinoma at biopsy.","Red is more dangerous than white."],
+["path","Koplik spots on the buccal mucosa are a sign of:",["Measles (rubeola)","Mumps","Hand, foot, and mouth disease","Scarlet fever"],"Small white spots on a red base appear on the buccal mucosa before the measles skin rash.","Koplik comes before the rash."],
+["path","Hutchinson incisors and mulberry molars indicate:",["Congenital syphilis","Ectodermal dysplasia","Fluorosis","Amelogenesis imperfecta"],"Treponema pallidum disturbs developing tooth germs, producing notched screwdriver-shaped incisors and globular molars. Hutchinson’s triad adds interstitial keratitis and deafness.","Hutchinson triad: teeth, eyes, ears."],
+["path","Most common intraoral site of squamous cell carcinoma in the U.S.:",["Posterior lateral and ventral tongue","Hard palate","Dorsum of the tongue","Attached gingiva of maxillary incisors"],"The posterolateral and ventral tongue and the floor of the mouth are high-risk sites; the dorsum is rare. Tobacco and alcohol are major risk factors.","Side and underside of the tongue, plus the floor."],
+["path","A bluish, fluctuant swelling on the lower lip after the patient bit it is most likely a:",["Mucocele","Ranula","Hemangioma","Pleomorphic adenoma"],"A minor salivary duct ruptures and mucin spills into the tissue (extravasation). The lower lip is the most common site. Excise along with the associated minor glands.","Lower lip + trauma = mucocele."],
+["path","A central giant cell granuloma is histologically identical to:",["Brown tumor of hyperparathyroidism","Ossifying fibroma","Ameloblastoma","Osteoma"],"Both show multinucleated giant cells in a vascular stroma. Check calcium, phosphate, and PTH to rule out hyperparathyroidism.","Giant cells? Check the parathyroid."],
+["path","Ameloblastoma most often presents as:",["A multilocular “soap bubble” radiolucency in the posterior mandible","A radiopacity at the apex of a vital tooth","A small lesion of the anterior maxilla in toddlers","A ground-glass expansion of the maxilla"],"Ameloblastoma is benign but locally aggressive, often causing root resorption and cortical expansion. Conservative removal leads to recurrence.","Ameloblastoma = bubbles in the back of the mandible."],
+
+["perio","In the 2017 AAP/EFP classification, a periodontitis grade describes:",["Rate of progression and risk factors","Severity and complexity of management","Number of teeth involved","Probing depth at the worst site"],"Stage (I–IV) captures severity and complexity. Grade (A, B, C) captures the evidence or risk of progression, modified by smoking and diabetes.","Stage = how bad now. Grade = how fast."],
+["perio","A periodontitis patient smokes 15 cigarettes a day. Which grade does this push toward?",["Grade C","Grade A","Grade B","Smoking doesn’t affect grade"],"Smoking ≥10 cigarettes/day shifts to Grade C; fewer than 10 shifts to B. HbA1c ≥7.0% in a diabetic patient also shifts to C.","10 cigs or A1c 7 → Grade C."],
+["perio","Interdental CAL at the worst site is 5 mm. By CAL alone, the stage is:",["Stage III","Stage I","Stage II","Stage IV"],"Stage I: 1–2 mm. Stage II: 3–4 mm. Stages III and IV: ≥5 mm; Stage IV adds complexity such as masticatory dysfunction or fewer than 20 remaining teeth.","1–2, 3–4, 5+."],
+["perio","Which bacterium is NOT part of Socransky’s red complex?",["Streptococcus sanguinis","Porphyromonas gingivalis","Tannerella forsythia","Treponema denticola"],"The red complex (P. gingivalis, T. forsythia, T. denticola) is most strongly linked to deep pockets and bleeding on probing. S. sanguinis is an early colonizer.","Red = P, T, T: Porphyromonas, Tannerella, Treponema."],
+["perio","Molar-incisor pattern periodontitis (formerly localized aggressive) is most associated with:",["Aggregatibacter actinomycetemcomitans","Fusobacterium nucleatum","Actinomyces israelii","Streptococcus mutans"],"A. actinomycetemcomitans produces a leukotoxin that kills neutrophils. Patients are typically young, with rapid bone loss around first molars and incisors despite little plaque.","A. a. attacks young first molars and incisors."],
+["perio","Gracey 11/12 is designed for:",["Mesial surfaces of posterior teeth","Distal surfaces of posterior teeth","Anterior teeth","Only facial surfaces of posteriors"],"Graceys are area-specific with one cutting edge. 1/2–5/6: anteriors. 7/8–9/10: posterior facial and lingual. 11/12 and 15/16: posterior mesial. 13/14 and 17/18: posterior distal.","11/12 = Mesial; 13/14 = Distal (M comes before D)."],
+["perio","Supracrestal tissue attachment (formerly “biologic width”) averages about:",["2 mm","0.5 mm","4 mm","6 mm"],"Gargiulo measured about 0.97 mm of junctional epithelium plus 1.07 mm of connective tissue attachment, about 2.04 mm. Margins placed into this zone cause inflammation and bone loss.","JE ≈ 1 + CT ≈ 1 = 2 mm. Don’t invade it."],
+["perio","Which drug is NOT associated with drug-induced gingival enlargement?",["Metformin","Phenytoin","Cyclosporine","Nifedipine"],"Anticonvulsants (phenytoin), immunosuppressants (cyclosporine), and calcium channel blockers (nifedipine, amlodipine) cause enlargement. Good plaque control reduces severity.","Phenytoin, Cyclosporine, Nifedipine: the big three."],
+["perio","Glickman furcation Class IV means:",["Through-and-through and clinically visible","Incipient, felt but not entered","Partial (cul-de-sac)","Through-and-through but covered by gingiva"],"Class I: incipient. II: cul-de-sac. III: through-and-through but covered by soft tissue. IV: through-and-through and open to direct view.","IV = you can see straight through."],
+["perio","Classic signs of necrotizing gingivitis include:",["Punched-out papillae, pain, and bleeding","Painless generalized recession","Deep pockets without inflammation","White plaques that wipe off"],"Interdental papilla necrosis, pain, and spontaneous bleeding, often with fetid odor and a pseudomembrane. Stress, smoking, poor nutrition, and immunosuppression predispose.","Necrosis, pain, bleeding: the NG triad."],
+
+["endo","Cold causes pain that lingers 30 seconds after the stimulus is removed. Pulpal diagnosis?",["Symptomatic irreversible pulpitis","Reversible pulpitis","Pulp necrosis","Normal pulp"],"Lingering pain signals irreversible inflammation. Reversible pulpitis gives sharp pain that stops within seconds of removing the stimulus. A necrotic pulp doesn’t respond to cold.","Lingers = Lost (irreversible)."],
+["endo","Which irrigant dissolves organic pulp tissue?",["Sodium hypochlorite","EDTA","Chlorhexidine","Saline"],"NaOCl dissolves vital and necrotic tissue and is antimicrobial. Chlorhexidine is antimicrobial but doesn’t dissolve tissue. EDTA removes the inorganic smear layer.","NaOCl nukes organics."],
+["endo","What is the main role of EDTA during root canal treatment?",["Chelating calcium to remove the inorganic smear layer","Dissolving necrotic tissue","Sealing the apex","Long-lasting antimicrobial action"],"EDTA chelates calcium, removing the inorganic smear layer and opening dentinal tubules. It’s typically followed by a final NaOCl rinse.","EDTA eats the dentin dust."],
+["endo","An immature permanent tooth with a vital pulp has a carious exposure. The treatment goal is:",["Apexogenesis","Apexification","Immediate extraction","Root-end resection"],"Apexogenesis is vital pulp therapy (pulp cap or pulpotomy) that lets the root keep growing in length and wall thickness. Apexification creates an apical barrier in a nonvital immature tooth.","GENesis = alive and growing. FICation = fix a dead one."],
+["endo","Where is the MB2 canal most commonly found?",["Mesiobuccal root of the maxillary first molar","Distal root of the mandibular first molar","Palatal root of the maxillary first molar","Mesial root of a mandibular premolar"],"Most maxillary first molars have a second mesiobuccal canal. Look palatal to the MB1 orifice, along the line toward the palatal canal.","MB2 hides palatal to MB1."],
+["endo","Sharp pain on release of biting pressure on one cusp suggests:",["Cracked tooth","Pulp necrosis","Acute apical abscess","Dentin hypersensitivity from recession"],"Cracked tooth syndrome classically hurts as the cusp flexes back on release. Use a bite test, transillumination, and staining.","Pain on release = cracked."],
+["endo","What does tenderness to percussion primarily indicate?",["Inflammation of the periapical tissues","That the pulp is vital","That the pulp is necrotic","A periodontal pocket"],"Percussion tests the periradicular tissues, not the pulp. Pulp status comes from cold and electric pulp testing.","Percussion = periapex. Cold = pulp."],
+["endo","Electric pulp and cold tests measure:",["Nerve response (sensibility), not blood supply","Pulpal blood flow","Bacterial load","Periapical bone density"],"They stimulate nerve fibers, so they can give false negatives in recently traumatized or immature teeth even when blood supply is intact. Pulse oximetry and laser Doppler assess blood flow.","Pulp tests test nerves, not vessels."],
+["endo","Working length is typically established:",["About 0.5–1 mm short of the radiographic apex","Exactly at the radiographic apex","2 mm beyond the apex","4–5 mm short of the apex"],"The apical constriction usually lies 0.5–1 mm short of the radiographic apex. Confirm with an electronic apex locator and a radiograph.","Stop just short, at the constriction."],
+
+["resto","G.V. Black Class II lesions involve:",["Proximal surfaces of premolars and molars","Proximal surfaces of anteriors without the incisal angle","The gingival third of facial or lingual surfaces","Pits and fissures"],"Class I: pits and fissures. II: posterior proximal. III: anterior proximal, no incisal angle. IV: anterior proximal with incisal angle. V: gingival third. VI: incisal edges and cusp tips.","I pits, II back sides, III front sides, IV front corners, V necks, VI tips."],
+["resto","An anterior proximal lesion that includes the incisal angle is Class:",["IV","III","V","VI"],"Class IV includes the incisal angle; Class III does not.","IV: the corner is Involved."],
+["resto","Which amalgam phase is weakest and most corrosion-prone, and is eliminated in high-copper alloys?",["Gamma-2 (Sn–Hg)","Gamma (Ag–Sn)","Gamma-1 (Ag–Hg)","Eta (Cu–Sn)"],"In high-copper alloys, tin reacts with copper to form the eta phase (Cu6Sn5), so the weak gamma-2 phase doesn’t form. This improves strength, corrosion resistance, and margins.","Gamma-2 = Tin + mercury = Too weak."],
+["resto","Which preparation has the highest C-factor (most polymerization stress)?",["Class I occlusal","Class IV","Class V","A veneer surface"],"C-factor = bonded surfaces ÷ unbonded surfaces. A Class I box has 5 bonded walls and 1 free surface (C = 5). Incremental layering reduces stress.","Class I box = 5 to 1."],
+["resto","How does glass ionomer bond to tooth structure?",["Chemically, via ionic bonds with calcium","Micromechanical resin tags only","Covalent bonds to collagen","It doesn’t bond at all"],"Carboxyl groups of polyacrylic acid chelate calcium in hydroxyapatite. Glass ionomer also releases and recharges fluoride and expands thermally much like tooth structure.","GI glues with ions and gives fluoride."],
+["resto","Why is zinc phosphate cement mixed incrementally on a cool glass slab?",["The set is exothermic; cooling extends working time","To increase film thickness","Because it’s light-cured","To raise its pH faster"],"Dissipating heat slows the set so more powder can be incorporated, increasing strength and working time. Its low initial pH can irritate the pulp.","Zinc phosphate runs hot: keep it cool."],
+["resto","Which impression material can fail to set because of sulfur in latex gloves?",["Addition silicone (PVS)","Polyether","Alginate","Polysulfide"],"Sulfur compounds poison the platinum catalyst in PVS. Use vinyl or nitrile gloves when handling it or touching the prepared area.","Platinum hates latex."],
+["resto","Why should an alginate impression be poured promptly?",["It loses or absorbs water (syneresis, imbibition) and distorts","It becomes radiopaque","It bonds to stone","It shrinks only when heated"],"Alginate is a hydrocolloid: it loses water in air (syneresis) and swells if soaked (imbibition). Pour it within minutes.","Alginate dries or drinks: pour fast."],
+["resto","The ferrule effect for an endodontically treated tooth needs at least about:",["1.5–2 mm of sound vertical tooth structure","0.5 mm","4 mm of post length only","No tooth structure if a post is used"],"A crown that encircles 1.5–2 mm of sound dentin above the core margin resists fracture far better than a post does. Posts retain cores; they don’t strengthen teeth.","A 2 mm ferrule hug saves the root."],
+["resto","Which gypsum product is used for dies?",["Type IV (high-strength die stone)","Type I (impression plaster)","Type II (model plaster)","Type III (dental stone)"],"Type IV and V stones have the highest strength and abrasion resistance. Type V has more setting expansion to compensate for base-metal casting shrinkage.","Higher type number = harder stone."],
+["resto","Why choose composite shade before placing the rubber dam?",["Isolated teeth dehydrate and look lighter","The dam changes the room lighting","Composite darkens under isolation","Shade guides can’t be used after etching"],"Dehydration makes enamel more opaque and lighter within minutes. Choose the shade on moist teeth in good light.","Shade first, dam second."],
+
+["pros","Kennedy Class I describes:",["Bilateral edentulous areas posterior to the remaining teeth","A unilateral distal extension","A unilateral bounded edentulous area","A single anterior area crossing the midline"],"Kennedy I: bilateral distal extension. II: unilateral distal extension. III: unilateral bounded (teeth on both sides). IV: single bilateral anterior area crossing the midline.","I: both backs open. II: one back open. III: boxed in. IV: front."],
+["pros","Which Kennedy class cannot have modification spaces?",["Class IV","Class I","Class II","Class III"],"Per Applegate’s rules, the most posterior edentulous area determines the class. Any extra space behind a Class IV area would change the classification, so Class IV has no modifications.","Class IV stands alone."],
+["pros","Ante’s law says that for a fixed partial denture:",["Abutment root surface area should equal or exceed that of the teeth replaced","The pontic should be wider than the abutments","Crown-to-root ratio must be 2:1","Abutments must be vital"],"It’s a guideline for judging whether abutments can carry the extra load. The ideal crown-to-root ratio is 1:2, with 1:1 the minimum acceptable.","Ante up: roots must cover what they replace."],
+["pros","The posterior palatal seal of a maxillary complete denture is placed at the:",["Vibrating line (junction of hard and soft palate)","Incisive papilla","Rugae","Midpalatal raphe, anterior third"],"The seal sits on compressible tissue near the vibrating line, just posterior to the foveae palatini, improving retention. Having the patient say “ah” helps locate it.","Say “ah” to find the seal."],
+["pros","The primary stress-bearing area for a mandibular complete denture is the:",["Buccal shelf","Crest of the residual ridge","Retromolar pad","Lingual frenum"],"The buccal shelf is dense cortical bone roughly perpendicular to occlusal forces. The crest of the mandibular ridge is cancellous and resorbs, so it isn’t the primary support.","Lower denture rests on the shelf."],
+["pros","Angular cheilitis in a denture wearer often signals:",["Decreased vertical dimension of occlusion","Increased vertical dimension of occlusion","Excess overjet","Overextended flanges"],"Overclosure deepens the folds at the commissures, where saliva pools and Candida thrives. Restore VDO and treat the infection.","Too short → corners fold → cheilitis."],
+["pros","New dentures click during speech. The most likely cause is:",["Increased vertical dimension of occlusion","Decreased vertical dimension","A short posterior palatal seal","Too little overjet"],"With excessive VDO, the interocclusal rest space disappears and teeth contact during speech. Patients may also report sore muscles and ridges.","Too tall → teeth tap."],
+["pros","F and V sounds help verify the position of the:",["Maxillary incisal edges against the lower lip","Mandibular incisors against the palate","Posterior palatal seal","Lingual flange length"],"For F and V, the maxillary incisal edges should lightly touch the wet-dry line of the lower lip. S sounds check the closest speaking space.","F/V: upper teeth find the lower lip."],
+["pros","The normal interocclusal rest space (freeway space) is about:",["2–4 mm","0 mm","6–8 mm","10 mm"],"VDO = vertical dimension at rest minus freeway space. Losing it causes clicking and soreness; too much suggests overclosure.","Rest minus about 3 mm ≈ VDO."],
+["pros","The RPI clasp system is designed for:",["Distal extension removable partial dentures","Tooth-supported fixed bridges","Complete dentures","Single-implant crowns"],"Mesial rest, proximal plate, and I-bar. When the distal extension base is loaded, the components move away from the abutment, reducing torque on it.","RPI: Rest, Plate, I-bar, built to let go when the base sinks."],
+
+["surg","Alveolar osteitis (dry socket) typically begins:",["2–4 days after extraction","Within the first hour","2–3 weeks later","After a month"],"The clot is lost or broken down, exposing bone. Expect severe radiating pain and bad odor. Treat with gentle irrigation, a medicated dressing, and analgesics; it isn’t an infection, so antibiotics aren’t routine.","Day-3 pain that’s getting worse = dry socket."],
+["surg","Which tooth is most commonly impacted?",["Mandibular third molar","Maxillary canine","Mandibular second premolar","Maxillary central incisor"],"Mandibular third molars are impacted most often, followed by maxillary third molars and maxillary canines.","Last in line, least room: lower thirds."],
+["surg","Which mandibular third molar impaction is generally hardest to remove?",["Distoangular","Mesioangular","Vertical","Horizontal"],"Distoangular teeth tilt back into the ramus, so the path of removal runs into bone. Mesioangular is most common and easiest. (In the maxilla, mesioangular is the harder one.)","Lower: distoangular is the devil."],
+["surg","A Le Fort I fracture:",["Separates the tooth-bearing maxilla horizontally above the apices","Is pyramidal through the nasal bones","Separates the whole face from the cranial base","Involves only the mandibular condyle"],"Le Fort I is horizontal (“floating palate”). II is pyramidal through the nasal bones. III is craniofacial dysjunction through the orbits and zygomatic arches.","I floats the palate, II the pyramid, III the whole face."],
+["surg","The most common medical emergency in the dental office is:",["Syncope","Anaphylaxis","Myocardial infarction","Seizure"],"Vasovagal syncope, often from anxiety, is most common. Place the patient supine with legs raised, keep the airway open, and give oxygen.","Fear → faint. Feet up."],
+["surg","Suspected myocardial infarction. Which drug do you give while waiting for EMS?",["Aspirin 162–325 mg, chewed","Epinephrine 0.3 mg IM","Glucose gel","Diphenhydramine"],"Call EMS, have the patient chew non–enteric-coated aspirin (if not allergic), give nitroglycerin if blood pressure allows, and oxygen if hypoxic. Be ready for CPR and the AED.","MI: call, chew aspirin, nitro."],
+["surg","Acute asthma attack in the chair. First drug?",["Albuterol (short-acting beta-2 agonist)","Fluticasone inhaler","Nitroglycerin","Midazolam"],"Albuterol relaxes bronchial smooth muscle within minutes. Inhaled steroids are maintenance, not rescue. Severe, unresponsive bronchospasm may need epinephrine.","Rescue = albuterol."],
+["surg","A conscious diabetic patient becomes shaky and sweaty. Best first step?",["Give 15–20 g of fast-acting oral sugar","Give insulin","Give nothing by mouth and wait","Give epinephrine"],"These suggest hypoglycemia. If conscious and able to swallow, give oral glucose and recheck in 15 minutes. If unconscious: IV dextrose or IM glucagon and call EMS.","Rule of 15: 15 g, recheck in 15 minutes."],
+["surg","At what blood pressure should elective dental care be deferred?",["≥180/110 mm Hg","≥120/80 mm Hg","≥140/90 mm Hg","≥130/85 mm Hg"],"At ≥180/110, postpone elective care and refer for medical evaluation. With symptoms such as chest pain or neurologic signs, call EMS.","180/110 → stop and refer."],
+["surg","An avulsed permanent tooth can’t be replanted right away. Best storage medium?",["Hank’s balanced salt solution (or cold milk)","Tap water","Dry gauze","Mouthwash"],"Keeping PDL cells alive is the priority. HBSS and milk preserve them; water is hypotonic and kills them. Avulsed primary teeth are not replanted.","Keep the PDL alive: HBSS or milk, never water."],
+
+["peds","Angle Class II molar relationship means the mesiobuccal cusp of the maxillary first molar is:",["Mesial to the buccal groove of the mandibular first molar","In the buccal groove of the mandibular first molar","Distal to the buccal groove of the mandibular first molar","In crossbite"],"Class I: MB cusp sits in the buccal groove. Class II: maxillary molar is mesial (mandible retruded). Class III: maxillary molar is distal (mandible forward).","II: upper molar too far forward."],
+["peds","Leeway space in the mandibular arch is about:",["1.7 mm per side","0.5 mm per side","5 mm per side","None in the mandible"],"Primary canines and molars are wider than their successors. Leeway is about 0.9 mm per side in the maxilla and 1.7 mm per side in the mandible, letting the lower first molar drift mesially into Class I.","Lower leeway is larger: 1.7 vs 0.9."],
+["peds","How much fluoride toothpaste for a child under 3?",["A smear the size of a grain of rice","A pea-sized amount","A full-length strip","None until age 6"],"ADA guidance: a rice-grain smear from the first tooth until age 3, then a pea-sized amount for ages 3–6. This balances caries protection against fluorosis risk.","Under 3: rice. 3–6: pea."],
+["peds","The U.S. recommended optimal fluoride level in community water is:",["0.7 mg/L","1.5 mg/L","4.0 mg/L","0.1 mg/L"],"The U.S. Public Health Service set 0.7 mg/L in 2015. The EPA’s enforceable maximum is 4.0 mg/L, with a secondary standard of 2.0 mg/L for dental fluorosis.","0.7 optimal, 2 mottles, 4 is the max."],
+["peds","Best space maintainer after early loss of one primary first molar on one side?",["Band and loop","Lower lingual holding arch","Nance appliance","Distal shoe"],"Band and loop holds a single unilateral space. A distal shoe is for losing a primary second molar before the permanent first molar erupts. Bilateral loss often needs a lingual holding arch (mandible) or Nance/TPA (maxilla).","One gap, one side: band and loop."],
+["peds","Where are primate spaces located?",["Mesial to maxillary primary canines and distal to mandibular primary canines","Distal to all primary second molars","Between the primary central incisors","Mesial to the permanent first molars"],"These spaces help fit the larger permanent incisors and allow early mesial shift of the mandibular molars.","Upper: canine’s front door. Lower: canine’s back door."],
+["peds","In early childhood caries, which teeth are usually spared?",["Mandibular incisors","Maxillary incisors","Maxillary first primary molars","Mandibular first primary molars"],"The tongue and saliva from the submandibular and sublingual ducts protect the lower incisors, while the maxillary incisors are affected first.","The tongue shields the lower front teeth."],
+["peds","The Moyers mixed dentition analysis predicts unerupted canine and premolar widths from:",["Mandibular permanent incisor widths","Maxillary first molar widths","Radiographs only","Primary canine widths"],"Moyers uses the summed widths of the four mandibular incisors plus probability tables. Tanaka-Johnston is a related shortcut.","Moyers measures the lower four."],
+["peds","Pulpotomy in a primary molar is indicated when:",["Caries exposes a vital pulp with no signs of radicular involvement","There is a draining sinus tract","Internal root resorption is present","There is a furcation radiolucency"],"Pulpotomy removes the inflamed coronal pulp and preserves vital radicular pulp (common agents: MTA, ferric sulfate, formocresol). Radicular signs call for pulpectomy or extraction.","Problem only in the crown → pulpotomy."],
+
+["xray","Using the SLOB rule, an object that moves in the same direction as the tube shift is:",["Lingual","Buccal","Centered","Not visible"],"Same Lingual, Opposite Buccal. Compare two images taken at different horizontal angles to locate objects such as impacted canines.","SLOB: Same Lingual, Opposite Buccal."],
+["xray","Elongated teeth on a periapical radiograph are caused by:",["Insufficient vertical angulation","Excessive vertical angulation","Incorrect horizontal angulation","Overexposure"],"Too little vertical angulation elongates; too much foreshortens. Horizontal errors overlap contacts.","Too flat → too long."],
+["xray","Overlapping proximal contacts on a bitewing come from:",["Incorrect horizontal angulation","Incorrect vertical angulation","Patient movement","Underexposure"],"The beam must pass through the contacts perpendicular to them. A horizontal miss overlaps adjacent teeth.","Overlap = horizontal."],
+["xray","Which cell is most radiosensitive?",["Small lymphocyte","Mature neuron","Muscle cell","Osteocyte"],"Rapidly dividing, undifferentiated cells and lymphocytes are most radiosensitive (law of Bergonié and Tribondeau). Mature nerve and muscle cells are least.","Lymphocytes go first; nerves last."],
+["xray","Which step most reduces patient dose for intraoral radiographs?",["Rectangular collimation with fast receptors","Round collimation","Longer exposure time","Shorter source-to-skin distance"],"Rectangular collimation shrinks the exposed area substantially compared with a round beam. Combine with digital or F-speed receptors and selection criteria (ALARA).","Rectangle beats circle."],
+["xray","A radiolucency near the apex of a mandibular premolar that tests vital could be the:",["Mental foramen","Incisive canal","Genial tubercles","Nasopalatine canal"],"The mental foramen can mimic a periapical lesion. A second image at a different angle moves it away from the apex, and the PDL space stays intact.","Vital tooth + lucency at a lower premolar apex → think mental foramen."],
+["xray","On a panoramic image, a ghost image appears:",["On the opposite side, higher, and blurrier","On the same side, lower, and sharper","Only in the anterior region","As a sharp duplicate beside the original"],"Ghosts come from dense objects (earrings, the hyoid, the spine) between the source and the center of rotation. They project on the opposite side, higher (because of the upward tube angle), larger, and blurrier.","Ghosts: opposite, higher, bigger, blurrier."],
+["xray","How often should a steam autoclave be spore tested?",["At least weekly","Once a year","Only after repairs","Every six months"],"The CDC recommends at least weekly biological monitoring, and every load containing an implantable device. Steam sterilizers use Geobacillus stearothermophilus spores.","Weekly spores for steam."],
+["xray","The CDC standard for dental unit waterlines is:",["≤500 CFU/mL of heterotrophic bacteria","≤5,000 CFU/mL","Zero bacteria at all times","≤50,000 CFU/mL"],"Water for nonsurgical care should meet EPA drinking-water standards (≤500 CFU/mL). Surgical procedures require sterile irrigant.","500 is the number."],
+
+["ethics","Which ADA ethical principle obligates dentists to be honest with patients?",["Veracity","Justice","Beneficence","Nonmaleficence"],"The ADA Code’s five principles: patient autonomy (self-governance), nonmaleficence (do no harm), beneficence (do good), justice (fairness), and veracity (truthfulness).","Veracity = verity = truth."],
+["ethics","Informed consent is most directly based on which principle?",["Patient autonomy","Justice","Veracity","Nonmaleficence"],"Autonomy gives patients the right to take part in treatment decisions. Informed consent covers the diagnosis, proposed treatment, risks, benefits, alternatives, and consequences of no treatment.","Autonomy = self-rule: the patient decides."],
+["ethics","A dentist suspects child abuse but has no proof. What’s required?",["Report to child protective services or law enforcement","Wait for proof","Confront the parent first","Document it and take no action"],"Dentists are mandated reporters in every U.S. state. Reasonable suspicion is enough, and good-faith reports are protected. Many physical abuse injuries involve the head, face, and neck.","Suspect → report. Proof isn’t your job."],
+["ethics","Sensitivity of a diagnostic test is:",["True positives ÷ (true positives + false negatives)","True negatives ÷ (true negatives + false positives)","True positives ÷ all positive results","Prevalence × specificity"],"Sensitivity is the ability to detect disease in those who have it. Specificity = TN ÷ (TN + FP). TP ÷ all positive results is the positive predictive value.","SnNout: a Sensitive test, when Negative, rules out."],
+["ethics","Which test property is best for ruling a disease IN?",["High specificity","High sensitivity","Low prevalence","High negative predictive value"],"A highly specific test has few false positives, so a positive result is trustworthy.","SpPin: Specific + Positive = rule in."],
+["ethics","Prevalence differs from incidence because prevalence counts:",["All existing cases at a point in time","Only new cases over a period","Only fatal cases","Cases per 1,000 births"],"Incidence = new cases over a time period. Prevalence = all existing cases at a time. Prevalence ≈ incidence × duration.","Incidence = new. Prevalence = present."],
+["ethics","Which study design gives the strongest evidence for treatment decisions?",["Systematic review/meta-analysis of RCTs","Case series","Expert opinion","Cross-sectional survey"],"The evidence pyramid, from top: systematic reviews of RCTs, RCTs, cohort studies, case-control studies, case series, expert opinion.","Top of the pyramid: reviews of RCTs."],
+["ethics","A case-control study reports its association using:",["Odds ratio","Relative risk","Incidence rate","Number needed to treat"],"Case-control studies start from outcome and look back at exposure, so incidence can’t be calculated; the odds ratio estimates risk. Cohort studies give relative risk.","Case-control → odds. Cohort → risk."],
+["ethics","Ending care for a patient of record without reasonable notice is:",["Patient abandonment","Allowed under autonomy","Required by HIPAA","Acceptable if the patient owes money"],"A dentist may end the relationship but must give notice and time to find another dentist, and must not stop mid-treatment in a way that harms the patient.","Leave properly, never mid-treatment."],
+
+["bio","Which bacterium is most associated with initiating caries on enamel?",["Streptococcus mutans","Lactobacillus species","Actinomyces viscosus","Porphyromonas gingivalis"],"S. mutans is acid-producing, acid-tolerant, and makes extracellular glucans from sucrose. Lactobacilli are linked to progression of established lesions; Actinomyces to root caries.","Mutans starts it; lactobacilli spread it."],
+["bio","The critical pH below which enamel demineralizes is about:",["5.5","7.4","4.0","6.8"],"Below about 5.5, saliva is undersaturated with respect to hydroxyapatite. Root dentin and cementum demineralize at a higher pH (about 6.2–6.7); fluorapatite tolerates about 4.5.","5.5: the enamel line."],
+["bio","Why is sucrose the most cariogenic sugar?",["S. mutans uses it to build sticky extracellular glucans","It’s the only sugar bacteria can ferment","It neutralizes salivary bicarbonate","It dissolves enamel directly"],"Glucosyltransferases split sucrose and build insoluble glucans that help bacteria stick and build plaque, on top of acid production.","Sucrose = sugar + glue."],
+["bio","Scorbutic gingivitis occurs because vitamin C is needed for:",["Hydroxylation of proline and lysine in collagen","Gamma-carboxylation of clotting factors","Calcium absorption","Epithelial keratinization"],"Without vitamin C, collagen is weak: swollen bleeding gingiva, loose teeth, poor wound healing, and perifollicular hemorrhages.","C for Collagen."],
+["bio","Vitamin K is required to activate which clotting factors?",["II, VII, IX, and X","I, V, and VIII","VIII and IX only","XII and XIII"],"Vitamin K enables gamma-carboxylation of factors II, VII, IX, X (and proteins C and S). Warfarin blocks vitamin K epoxide reductase.","“1972”: X, IX, VII, II."],
+["bio","Hemophilia A is a deficiency of factor:",["VIII","IX","XI","VII"],"Hemophilia A = factor VIII. Hemophilia B (Christmas disease) = factor IX. Coordinate factor replacement with the hematologist before surgery.","A before B, VIII before IX."],
+["bio","What is the main buffer in stimulated saliva?",["Bicarbonate","Phosphate","Proteins","Ammonia"],"Bicarbonate concentration rises with flow, so it’s the main buffer in stimulated saliva. Phosphate matters more at rest.","Flow up → bicarbonate up."],
+["bio","Fluoride’s main anticaries effect after teeth erupt is:",["Topical: promoting remineralization and inhibiting demineralization","Only systemic incorporation during development","Killing all oral bacteria","Increasing salivary flow"],"Fluoride in saliva and plaque fluid promotes remineralization with a more acid-resistant fluorapatite-like mineral and inhibits bacterial enolase. Topical action dominates after eruption.","Fluoride works on the surface, every day."]
+];
+
+const PAIRS=[
+["Koplik spots","Measles"],["Hutchinson incisors","Congenital syphilis"],["Ground glass","Fibrous dysplasia"],
+["Cotton wool","Paget disease"],["Gorlin syndrome","Multiple OKCs"],["Desmoglein 3","Pemphigus vulgaris"],
+["Flumazenil","Reverses benzodiazepines"],["Naloxone","Reverses opioids"],["Prilocaine","Methemoglobinemia"],
+["Epstein-Barr virus","Hairy leukoplakia"],["Gracey 11/12","Posterior mesials"],["Gracey 13/14","Posterior distals"],
+["A. actinomycetemcomitans","Molar-incisor periodontitis"],["Sodium hypochlorite","Dissolves organic tissue"],
+["EDTA","Removes smear layer"],["Kennedy Class I","Bilateral distal extension"],["Kennedy Class III","Unilateral bounded space"],
+["Vibrating line","Posterior palatal seal"],["Buccal shelf","Lower denture support"],["Decreased VDO","Angular cheilitis"],
+["SLOB","Same lingual, opposite buccal"],["Small lymphocyte","Most radiosensitive cell"],["Factor VIII","Hemophilia A"],
+["Factor IX","Hemophilia B"],["Vitamin C","Collagen hydroxylation"],["S. mutans","Starts caries"],
+["Wharton duct","Submandibular gland"],["Stensen duct","Parotid gland"],["Chorda tympani","Taste, front of tongue"],
+["Pleomorphic adenoma","Top benign salivary tumor"],["Mucoepidermoid carcinoma","Top malignant salivary tumor"],
+["Phentolamine","Reverses soft-tissue numbness"],["Gamma-2 phase","Weakest amalgam phase"],["Ante’s law","Abutment root area"],
+["Erythroplakia","Highest malignant risk"],["Ludwig’s angina","Airway emergency"]
+];
+
+/* ---------- storage ---------- */
+const KEY="boardbite-v1";
+function load(){
+  try{const s=localStorage.getItem(KEY); if(s){const d=JSON.parse(s); return {boxes:d.boxes||{},best:d.best||{},cats:d.cats||null};}}catch(e){}
+  return {boxes:{},best:{},cats:null};
+}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(store));}catch(e){}}
+let store=load();
+let selected=new Set((store.cats&&store.cats.length)?store.cats.filter(c=>CATS[c]):Object.keys(CATS));
+
+/* ---------- helpers ---------- */
+const $=s=>document.querySelector(s);
+function h(tag,props,...kids){
+  const el=document.createElement(tag);
+  for(const [k,v] of Object.entries(props||{})){
+    if(v===false||v==null) continue;
+    if(k==="class") el.className=v;
+    else if(k.startsWith("on")) el.addEventListener(k.slice(2),v);
+    else el.setAttribute(k,v===true?"":v);
+  }
+  for(const c of kids.flat()){ if(c==null||c===false) continue; el.append(c.nodeType?c:document.createTextNode(String(c))); }
+  return el;
+}
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+let timers=[];let keyHandler=null;
+function reset(){timers.forEach(t=>{clearInterval(t);clearTimeout(t);});timers=[];keyHandler=null;window.scrollTo(0,0);}
+document.addEventListener("keydown",e=>{ if(keyHandler && !e.metaKey && !e.ctrlKey && !e.altKey) keyHandler(e); });
+const boxOf=i=>store.boxes[i]||0;
+function mark(i,ok){const b=boxOf(i);store.boxes[i]=ok?Math.min(5,Math.max(b,1)+1):1;save();renderArch();}
+const masteredCount=()=>Q.reduce((n,_,i)=>n+(boxOf(i)>=3?1:0),0);
+const idsFor=()=>Q.map((_,i)=>i).filter(i=>selected.has(Q[i][0]));
+const weakIds=()=>Q.map((_,i)=>i).filter(i=>boxOf(i)===1);
+function hookBox(text){return h("div",{class:"hookbox"},h("strong",{},"Memory hook"),text);}
+
+/* ---------- mastery smile ---------- */
+const HALF=[19,19,20,14,14,13,11,14]; // 3rd molar → central incisor
+const HEIGHT={19:15,20:15,14:17,13:22,11:20};
+let toothEls={};let prevFilled=-1;
+(function buildArch(){
+  const svg=$("#arch");const gap=2;const widths=[...HALF,...HALF.slice().reverse()];
+  const total=widths.reduce((a,b)=>a+b,0)+gap*15;const W=total+8;
+  let x=4;let maxY=0;const ns="http://www.w3.org/2000/svg";
+  widths.forEach((w,k)=>{
+    const cx=x+w/2;const n=(cx-W/2)/(W/2);const yU=2+10*(1-n*n);
+    let hh=HEIGHT[w]; if(k===7||k===8) hh=21;
+    const up=document.createElementNS(ns,"rect");
+    up.setAttribute("x",x);up.setAttribute("y",yU);up.setAttribute("width",w);up.setAttribute("height",hh);up.setAttribute("rx",5);
+    const lowY=yU+hh+2;const lw=(k===6||k===7||k===8||k===9)?w-2:w;
+    const lo=document.createElementNS(ns,"rect");
+    lo.setAttribute("x",x+(w-lw)/2);lo.setAttribute("y",lowY);lo.setAttribute("width",lw);lo.setAttribute("height",hh-2);lo.setAttribute("rx",5);
+    const uNum=k+1, lNum=32-k;
+    [[up,uNum],[lo,lNum]].forEach(([el,num])=>{el.setAttribute("class","tooth");const t=document.createElementNS(ns,"title");t.textContent="#"+num;el.append(t);svg.append(el);toothEls[num]=el;});
+    maxY=Math.max(maxY,lowY+hh);x+=w+gap;
+  });
+  svg.setAttribute("viewBox",`0 0 ${W} ${maxY+3}`);
+})();
+const FILL_ORDER=[];for(let k=0;k<8;k++)FILL_ORDER.push(8-k,9+k,25+k,24-k);
+function renderArch(){
+  const m=masteredCount();const filled=Math.floor(m*32/Q.length);
+  FILL_ORDER.forEach((num,idx)=>{
+    const el=toothEls[num];const on=idx<filled;el.classList.toggle("on",on);
+    if(prevFilled>=0 && on && idx>=prevFilled){el.classList.remove("pop");void el.getBoundingClientRect();el.classList.add("pop");}
+  });
+  prevFilled=filled;
+  $("#masteryText").textContent=`${m} of ${Q.length} mastered`;
+  $("#arch").setAttribute("aria-label",`Mastery smile: ${filled} of 32 teeth restored`);
+}
+
+/* ---------- home ---------- */
+let resetArmed=false;
+function home(){
+  reset();resetArmed=false;
+  const app=$("#app");app.replaceChildren();
+  const chips=h("div",{class:"chips"});
+  Object.entries(CATS).forEach(([k,label])=>{
+    const n=Q.filter(q=>q[0]===k).length;
+    chips.append(h("button",{type:"button",class:"chip","aria-pressed":selected.has(k)?"true":"false",onclick:()=>{selected.has(k)?selected.delete(k):selected.add(k);persistCats();home();}},label,h("span",{class:"n"},n)));
+  });
+  const count=idsFor().length;const none=count===0;
+  const weak=weakIds();
+  const best=store.best||{};
+  app.append(
+    h("h1",{},"Fill the smile."),
+    h("p",{class:"lede"},`Get a question right twice in a row and it’s mastered. Every few mastered questions restores a tooth in the smile above. ${Q.length} questions across ${Object.keys(CATS).length} INBDE topic areas.`),
+    h("h2",{},"Topics"),
+    chips,
+    h("div",{class:"row",style:"margin-top:8px"},
+      h("button",{type:"button",class:"linkbtn",onclick:()=>{selected=new Set(Object.keys(CATS));persistCats();home();}},"Select all"),
+      h("button",{type:"button",class:"linkbtn",onclick:()=>{selected.clear();persistCats();home();}},"Clear")
+    ),
+    none?h("p",{class:"hint"},"Pick at least one topic to play Arcade or Flash recall."):null,
+    weak.length?h("div",{class:"weak"},h("p",{},h("strong",{},`${weak.length} weak spot${weak.length>1?"s":""}`)," from questions you missed last time."),h("button",{type:"button",class:"btn",onclick:()=>startArcade(weak)},"Drill weak spots")):null,
+    h("section",{class:"modes"},
+      modeRow("Arcade run",`15 questions and 3 teeth to lose. Streaks multiply points; answer within 10 seconds for a bonus.${best.arcade?` Best: ${best.arcade.toLocaleString()} pts.`:""}`,"Play",()=>startArcade(idsFor()),none),
+      modeRow("Flash recall","20 cards, weakest first. Think of the answer, flip, then mark whether you knew it.","Study",()=>startFlash(idsFor()),none),
+      modeRow("Match-up",`Pair 6 classic buzzwords with their answers. Each wrong pair adds 3 seconds.${best.match?` Best: ${best.match.toFixed(1)} s.`:""}`,"Match",startMatch,false)
+    ),
+    h("p",{class:"note"},"Original practice questions written from standard dental references to mirror INBDE content areas. They aren’t official JCNDE items, and the real exam is case-based, so pair this with the official JCNDE sample questions. Keyboard: 1–4 to answer, Enter to continue, Space to flip."),
+    h("button",{type:"button",class:"linkbtn",onclick:(e)=>{
+      if(!resetArmed){resetArmed=true;e.target.textContent="Tap again to erase all progress";return;}
+      store={boxes:{},best:{},cats:[...selected]};save();prevFilled=-1;renderArch();home();
+    }},"Reset progress")
+  );
+}
+function persistCats(){store.cats=[...selected];save();}
+function modeRow(title,desc,label,fn,disabled){
+  return h("div",{class:"mode"},h("h3",{},title),h("p",{},desc),h("button",{type:"button",class:"btn",onclick:fn,disabled:disabled}, label));
+}
+
+/* ---------- arcade ---------- */
+const mult=s=>Math.min(4,1+Math.floor(s/3));
+function toothIcon(alive){
+  const ns="http://www.w3.org/2000/svg";const s=document.createElementNS(ns,"svg");s.setAttribute("viewBox","0 0 22 26");s.setAttribute("aria-hidden","true");
+  const p=document.createElementNS(ns,"path");
+  p.setAttribute("d","M4 2c3-1 4 1 7 1s4-2 7-1c3 1 3 6 2 9-1 4-1 6-2 11-.4 2-2.4 2-3-.5L13 16c-.4-2-3.6-2-4 0l-2 5.5c-.6 2.5-2.6 2.5-3 .5-1-5-1-7-2-11C1 8 1 3 4 2z");
+  p.setAttribute("fill",alive?"var(--enamel)":"transparent");p.setAttribute("stroke",alive?"var(--ink)":"var(--line)");p.setAttribute("stroke-width","1.5");
+  if(!alive)p.setAttribute("stroke-dasharray","3 2");
+  s.append(p);return s;
+}
+function startArcade(ids){
+  if(!ids.length) return;
+  const pool=shuffle(ids).slice(0,15);
+  runArcade({ids,pool,idx:0,lives:3,score:0,streak:0,bestStreak:0,correct:0,answered:0,missed:[]});
+}
+function runArcade(run){
+  reset();
+  if(run.idx>=run.pool.length||run.lives<=0) return arcadeResults(run);
+  const id=run.pool[run.idx];const [cat,q,opts,expl,hook]=Q[id];
+  const order=shuffle(opts.map((t,k)=>({t,ok:k===0})));
+  const app=$("#app");app.replaceChildren();
+  const livesEl=h("div",{class:"lives","aria-label":`${run.lives} lives left`});
+  const scoreEl=h("div",{class:"score"});const streakEl=h("div",{class:"streak"});
+  function paintHud(){
+    livesEl.replaceChildren(...[0,1,2].map(k=>toothIcon(k<run.lives)));livesEl.setAttribute("aria-label",`${run.lives} lives left`);
+    scoreEl.replaceChildren(h("span",{class:"num"},run.score.toLocaleString()),"pts");
+    const m=mult(run.streak);streakEl.textContent=`×${m}`;streakEl.className="streak"+(m>1?" hot":"");
+  }
+  paintHud();
+  const speed=h("div",{class:"speed","aria-hidden":"true"},h("div",{class:"speed-fill"}));
+  const optsEl=h("div",{class:"options"});
+  const fb=h("div",{class:"feedback",hidden:true,"aria-live":"polite"});
+  const t0=performance.now();let done=false;
+  order.forEach((o,k)=>optsEl.append(h("button",{type:"button",class:"opt",onclick:()=>choose(k)},h("span",{class:"key"},"ABCD"[k]),h("span",{},o.t))));
+  function choose(k){
+    if(done)return;done=true;speed.classList.add("stop");
+    const btns=[...optsEl.children];
+    btns.forEach((b,j)=>{b.disabled=true;if(order[j].ok)b.classList.add("right");else if(j===k)b.classList.add("wrong");});
+    const ok=order[k].ok;const secs=(performance.now()-t0)/1000;run.answered++;
+    let gained=0,bonus=0;
+    if(ok){run.streak++;run.bestStreak=Math.max(run.bestStreak,run.streak);run.correct++;bonus=secs<10?50:0;gained=100*mult(run.streak)+bonus;run.score+=gained;}
+    else{run.streak=0;run.lives--;run.missed.push(id);}
+    mark(id,ok);paintHud();
+    const correctText=opts[0];
+    fb.className="feedback"+(ok?"":" miss");fb.hidden=false;
+    fb.replaceChildren(
+      h("p",{class:"verdict"},ok?`Correct. +${gained}${bonus?" (speed bonus)":""}`:(run.lives>0?"Not quite. You lost a tooth.":"Not quite. That was your last tooth.")),
+      ok?null:h("p",{},h("strong",{},"Answer: "),correctText),
+      h("p",{},expl),
+      hookBox(hook)
+    );
+    const nextBtn=h("button",{type:"button",class:"btn",onclick:next},run.lives<=0||run.idx+1>=run.pool.length?"See results":"Next question");
+    app.append(h("div",{class:"actions"},nextBtn));nextBtn.focus({preventScroll:true});
+    fb.scrollIntoView({behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth",block:"nearest"});
+  }
+  function next(){run.idx++;runArcade(run);}
+  keyHandler=e=>{
+    if(!done&&["1","2","3","4"].includes(e.key)){e.preventDefault();choose(+e.key-1);}
+    else if(done&&e.key==="Enter"&&document.activeElement?.tagName!=="BUTTON"){e.preventDefault();next();}
+  };
+  app.append(
+    h("div",{class:"hud"},livesEl,scoreEl,streakEl),speed,
+    h("div",{class:"meta"},h("span",{},CATS[cat]),h("span",{},`${run.idx+1} of ${run.pool.length}`)),
+    h("p",{class:"qtext"},q),optsEl,fb
+  );
+}
+function arcadeResults(run){
+  reset();
+  const app=$("#app");app.replaceChildren();
+  const best=store.best.arcade||0;const isBest=run.score>best;
+  if(isBest){store.best.arcade=run.score;save();}
+  const acc=run.answered?Math.round(run.correct/run.answered*100):0;
+  app.append(
+    h("h1",{},run.lives<=0?"Out of teeth.":"Run complete."),
+    h("div",{class:"big"},`${run.score.toLocaleString()} pts`),
+    isBest&&run.score>0?h("span",{class:"badge"},"New best"):null,
+    h("div",{class:"stats"},
+      h("div",{},h("b",{},`${acc}%`),"accuracy"),
+      h("div",{},h("b",{},`${run.correct}/${run.answered}`),"correct"),
+      h("div",{},h("b",{},run.bestStreak),"best streak")
+    ),
+    h("div",{class:"actions",style:"justify-content:flex-start"},
+      h("button",{type:"button",class:"btn",onclick:()=>startArcade(run.ids)},"Play again"),
+      run.missed.length?h("button",{type:"button",class:"btn ghost",onclick:()=>startFlashIds(run.missed)},"Review misses as cards"):null,
+      h("button",{type:"button",class:"btn ghost",onclick:home},"Home")
+    ),
+    run.missed.length?h("h2",{style:"margin-top:30px"},"What to remember"):null,
+    run.missed.length?h("ul",{class:"missed"},run.missed.map(i=>h("li",{},h("div",{},Q[i][1]),h("div",{class:"a"},Q[i][2][0]),h("div",{class:"h"},Q[i][4])))):null
+  );
+}
+
+/* ---------- flash recall ---------- */
+function startFlash(ids){
+  if(!ids.length)return;
+  const deck=shuffle(ids).sort((a,b)=>boxOf(a)-boxOf(b)).slice(0,20);
+  runFlash({deck,i:0,knew:0});
+}
+function startFlashIds(ids){runFlash({deck:shuffle(ids),i:0,knew:0});}
+function runFlash(st){
+  reset();
+  const app=$("#app");app.replaceChildren();
+  if(st.i>=st.deck.length){
+    app.append(h("h1",{},"Deck done."),h("div",{class:"big"},`${st.knew} of ${st.deck.length}`),h("p",{class:"lede"},"Cards you missed come back first next time."),
+      h("div",{class:"actions",style:"justify-content:flex-start"},h("button",{type:"button",class:"btn",onclick:()=>startFlash(idsFor())},"New deck"),h("button",{type:"button",class:"btn ghost",onclick:home},"Home")));
+    return;
+  }
+  const id=st.deck[st.i];const [cat,q,opts,expl,hook]=Q[id];const b=boxOf(id);
+  const pips=h("div",{class:"pips","aria-label":`Box ${b} of 5`},[1,2,3,4,5].map(n=>h("span",{class:"pip"+(n<=b?" f":"")})));
+  const card=h("div",{class:"card"});
+  const actions=h("div",{class:"actions"});
+  let flipped=false;
+  function front(){
+    card.replaceChildren(h("p",{class:"qtext"},q));
+    const btn=h("button",{type:"button",class:"btn",onclick:flip},"Show answer");
+    actions.replaceChildren(btn);
+  }
+  function flip(){
+    if(flipped)return;flipped=true;
+    card.replaceChildren(h("p",{class:"qtext",style:"font-size:1.1rem;color:var(--muted)"},q),h("div",{class:"answer"},opts[0]),h("p",{style:"margin:0"},expl),hookBox(hook));
+    const miss=h("button",{type:"button",class:"btn ghost",onclick:()=>grade(false)},"Missed it");
+    const knew=h("button",{type:"button",class:"btn",onclick:()=>grade(true)},"Knew it");
+    actions.replaceChildren(miss,knew);knew.focus({preventScroll:true});
+  }
+  function grade(ok){mark(id,ok);if(ok)st.knew++;st.i++;runFlash(st);}
+  keyHandler=e=>{
+    if(!flipped&&(e.key===" "||e.key==="Enter")){e.preventDefault();flip();}
+    else if(flipped&&e.key==="1"){grade(false);}else if(flipped&&e.key==="2"){grade(true);}
+  };
+  front();
+  app.append(h("div",{class:"meta",style:"margin-top:22px"},h("span",{},CATS[cat]),h("span",{class:"row"},pips,`${st.i+1} of ${st.deck.length}`)),card,actions,
+    h("div",{class:"actions",style:"justify-content:flex-start"},h("button",{type:"button",class:"linkbtn",onclick:home},"End session")));
+}
+
+/* ---------- match-up ---------- */
+function startMatch(){
+  reset();
+  const pairs=shuffle(PAIRS).slice(0,6);
+  const left=shuffle(pairs.map((p,i)=>({t:p[0],i}))),right=shuffle(pairs.map((p,i)=>({t:p[1],i})));
+  let selL=null,selR=null,done=0,mistakes=0;const t0=performance.now();
+  const app=$("#app");app.replaceChildren();
+  const clock=h("div",{class:"score"},h("span",{class:"num"},"0.0"),"s");
+  const missEl=h("div",{class:"streak"},"0 misses");
+  const tick=()=>{clock.firstChild.textContent=((performance.now()-t0)/1000+mistakes*3).toFixed(1);};
+  timers.push(setInterval(tick,100));
+  const L=h("div",{class:"col"}),R=h("div",{class:"col"});
+  const mk=(item,side)=>{const b=h("button",{type:"button",class:"tile"+(side==="L"?" term":""),onclick:()=>pick(item,side,b)},item.t);item.el=b;return b;};
+  left.forEach(it=>L.append(mk(it,"L")));right.forEach(it=>R.append(mk(it,"R")));
+  function pick(item,side,b){
+    if(b.classList.contains("done"))return;
+    if(side==="L"){if(selL)selL.el.classList.remove("sel");selL=selL===item?null:item;}
+    else{if(selR)selR.el.classList.remove("sel");selR=selR===item?null:item;}
+    if(selL)selL.el.classList.add("sel");if(selR)selR.el.classList.add("sel");
+    if(selL&&selR){
+      const a=selL,c=selR;selL=selR=null;a.el.classList.remove("sel");c.el.classList.remove("sel");
+      if(a.i===c.i){[a.el,c.el].forEach(x=>{x.classList.add("done");x.disabled=true;});done++;if(done===pairs.length)finish();}
+      else{mistakes++;missEl.textContent=`${mistakes} miss${mistakes===1?"":"es"}`;[a.el,c.el].forEach(x=>{x.classList.remove("err");void x.offsetWidth;x.classList.add("err");});
+        timers.push(setTimeout(()=>{a.el.classList.remove("err");c.el.classList.remove("err");},450));}
+    }
+  }
+  function finish(){
+    const total=(performance.now()-t0)/1000+mistakes*3;
+    reset();
+    const prev=store.best.match;const isBest=!prev||total<prev;
+    if(isBest){store.best.match=total;save();}
+    app.replaceChildren(
+      h("h1",{},"All matched."),h("div",{class:"big"},`${total.toFixed(1)} s`),
+      isBest?h("span",{class:"badge"},"New best"):null,
+      h("div",{class:"stats"},h("div",{},h("b",{},mistakes),"wrong pairs (+3 s each)")),
+      h("h2",{style:"margin-top:26px"},"The pairs"),
+      h("ul",{class:"missed"},pairs.map(p=>h("li",{},h("strong",{},p[0]),h("div",{class:"a"},p[1])))),
+      h("div",{class:"actions",style:"justify-content:flex-start"},h("button",{type:"button",class:"btn",onclick:startMatch},"Play again"),h("button",{type:"button",class:"btn ghost",onclick:home},"Home"))
+    );
+  }
+  app.append(h("div",{class:"hud"},clock,missEl),h("p",{class:"lede",style:"margin:8px 0 0"},"Tap a term, then its match."),h("div",{class:"match"},L,R),
+    h("div",{class:"actions",style:"justify-content:flex-start"},h("button",{type:"button",class:"linkbtn",onclick:home},"Quit")));
+}
+
+$("#brand").addEventListener("click",home);
+renderArch();prevFilled=Math.floor(masteredCount()*32/Q.length);
+home();
+</script>
+</body>
+</html>
