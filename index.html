@@ -116,7 +116,31 @@ h2{font-family:"Bricolage Grotesque","Avenir Next",system-ui,sans-serif;font-siz
 .missed li{background:var(--surface);border-radius:12px;padding:14px 16px;border:1px solid var(--line)}
 .missed .a{color:var(--ok);font-weight:700;margin:4px 0}
 .missed .h{color:var(--muted);font-size:.92rem}
+.pbox{background:var(--surface-2);border:1.5px solid var(--line);border-radius:14px;padding:14px 16px;margin:6px 0 16px;font-size:.93rem;line-height:1.45}
+.pbox-title{font-family:'Bricolage Grotesque','Avenir Next',system-ui,sans-serif;font-weight:800;margin-bottom:8px}
+.pbox dl{display:grid;grid-template-columns:max-content 1fr;gap:5px 14px;margin:0}
+.pbox dt{color:var(--muted)}
+.pbox dd{margin:0}
+.opt.chosen{border-color:var(--accent);box-shadow:inset 0 0 0 1.5px var(--accent)}
+.opt.chosen .key{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.qnav{display:flex;flex-wrap:wrap;gap:6px}
+.qn{width:40px;height:34px;border-radius:8px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);font:inherit;font-size:.82rem;cursor:pointer;position:relative}
+.qn.ans{background:var(--surface-2);border-color:var(--muted)}
+.qn.cur{border-color:var(--accent);box-shadow:inset 0 0 0 1.5px var(--accent)}
+.qn.flag::after{content:'';position:absolute;top:3px;right:3px;width:7px;height:7px;border-radius:50%;background:var(--gold)}
+#examClock.low{color:var(--bad)}
+.confirm{background:var(--gold-soft);border-radius:14px;padding:14px 16px;margin:10px 0}
+.topics{display:grid;gap:9px;margin-top:10px}
+.trow{display:grid;grid-template-columns:minmax(0,1fr) 110px 3.2em;gap:10px;align-items:center;font-size:.92rem}
+.tbar{height:8px;background:var(--line);border-radius:4px;overflow:hidden}
+.tbar i{display:block;height:100%;background:var(--accent)}
+.trow.weak .tbar i{background:var(--bad)}
+.yours{color:var(--bad);font-weight:700}
+details summary{cursor:pointer;color:var(--accent);font-size:.9rem;margin-bottom:6px}
 @media (max-width:520px){
+  .pbox dl{grid-template-columns:1fr;gap:0}
+  .pbox dd{margin-bottom:6px}
+  .trow{grid-template-columns:minmax(0,1fr) 70px 3em}
   .mode{grid-template-columns:1fr}
   .mode .btn{grid-row:auto;grid-column:1;justify-self:start;margin-top:8px}
   .tile{font-size:.88rem;padding:10px}
@@ -311,6 +335,61 @@ const PAIRS=[
 ["Erythroplakia","Highest malignant risk"],["Ludwig’s angina","Airway emergency"]
 ];
 
+/* ---------- case sets (patient box + linked questions) ---------- */
+const CASES=[
+{t:'Extraction on an anticoagulant',box:[['Patient','58-year-old man'],['Chief complaint','“This back tooth on the lower left keeps breaking.” #19 is nonrestorable; extraction is planned.'],['Medical history','Atrial fibrillation, hypertension'],['Medications','Warfarin 5 mg daily, metoprolol 50 mg daily'],['Allergies','None known'],['Vitals','BP 136/84 mm Hg, pulse 70'],['Labs','INR 2.5, drawn this morning']],qs:[
+['surg','What is the best plan for his warfarin before extracting #19?',['Continue warfarin and use local hemostatic measures','Stop warfarin 5 days before the extraction','Switch him to aspirin the week before','Postpone until his INR is below 1.5'],'With an INR in the therapeutic range (generally 3.5 or less), bleeding from a simple extraction is manageable locally: pressure, sutures, oxidized cellulose or gelatin sponge, and tranexamic acid rinse. Stopping warfarin raises his stroke risk and is never the dentist’s decision alone.','Keep the warfarin, pack the socket.'],
+['pharm','Which analgesic is the best choice after the extraction?',['Acetaminophen','Ibuprofen','Naproxen','High-dose aspirin'],'NSAIDs and aspirin impair platelet function and add to warfarin’s bleeding risk. Acetaminophen is preferred at usual doses, though regular high doses over several days can raise the INR.','Warfarin + NSAID = bleeding double hit.'],
+['pharm','Which antimicrobial is most likely to raise his INR significantly?',['Metronidazole','Penicillin VK','Clindamycin','Chlorhexidine rinse'],'Metronidazole and azole antifungals (such as fluconazole) inhibit CYP2C9, which clears the more potent S-warfarin, so the INR can climb sharply. Avoid them or coordinate with his physician.','Metro and the azoles make warfarin go wild.']]},
+{t:'Avulsed permanent incisor',box:[['Patient','8-year-old boy'],['Chief complaint','Knocked out his upper front tooth falling off his bike 40 minutes ago'],['Tooth','#8, stored in cold milk since the accident'],['Medical history','Healthy; immunizations up to date'],['Findings','Socket intact, no other injuries. Radiographs show open (immature) apices on the maxillary incisors, including #8.']],qs:[
+['surg','What should you do now?',['Rinse the root gently with saline, replant, and splint','Scrub the root clean before replanting','Don’t replant; place a space maintainer','Do root canal treatment outside the mouth, then replant'],'Extraoral dry time was minimal and the tooth was kept in a physiologic medium, so PDL cells may still be alive. Hold the tooth by the crown, rinse gently, replant with light pressure, confirm position radiographically, and splint. Never scrub the root.','Hold the crown, rinse, replant. Never scrub.'],
+['surg','What splint is recommended, and for how long?',['A flexible splint for about 2 weeks','A rigid splint for 8 weeks','A flexible splint for 6 months','No splint is needed'],'IADT guidelines call for a passive, flexible splint for about 2 weeks after avulsion. Rigid or prolonged splinting encourages replacement resorption (ankylosis).','Avulsion: flexible for fourteen days.'],
+['pharm','Which systemic antibiotic fits best after replantation in this child?',['Amoxicillin or penicillin V','Doxycycline','Tetracycline','None; antibiotics are never used for avulsion'],'IADT recommends systemic antibiotics after avulsion. In young children, tetracyclines risk permanent tooth discoloration, so amoxicillin or penicillin V is preferred. Also confirm tetanus status.','Kids + tetracycline = stained teeth. Use amoxicillin.'],
+['endo','Because #8 has an open apex, what’s the plan for the pulp?',['Monitor for revascularization; treat only if signs of necrosis or infection appear','Start root canal treatment within 2 weeks regardless','Extract it if it doesn’t test vital at 1 week','Do a pulpectomy before splinting'],'An immature tooth replanted quickly can revascularize. Follow it closely with clinical and radiographic checks, and start endodontic treatment (regenerative endodontics or apexification) only if necrosis or infection develops. Mature teeth with closed apices get root canal treatment within about 2 weeks.','Open apex: watch and wait. Closed apex: RCT within 2 weeks.']]},
+{t:'Exposed bone in a cancer patient',box:[['Patient','66-year-old woman'],['Chief complaint','“There’s a rough spot on my lower gum.”'],['Medical history','Breast cancer with bone metastases'],['Medications','IV zoledronic acid monthly for 2 years; letrozole'],['Radiation','None to the head and neck'],['Findings','6 mm area of exposed yellow-white bone on the lingual of the mandibular left molar region, present for 10 weeks. No pain, swelling, or drainage.']],qs:[
+['path','What is the diagnosis?',['Medication-related osteonecrosis of the jaw (MRONJ)','Osteoradionecrosis','Acute osteomyelitis','Osteosarcoma'],'MRONJ requires current or past antiresorptive or antiangiogenic therapy, exposed bone (or bone that can be probed through a fistula) persisting more than 8 weeks, and no radiation or obvious metastatic disease to the jaws.','Antiresorptive + exposed bone over 8 weeks + no radiation = MRONJ.'],
+['path','Which MRONJ stage is this?',['Stage 1','Stage 0','Stage 2','Stage 3'],'Stage 0: no exposed bone, nonspecific symptoms. Stage 1: exposed bone, no symptoms, no infection. Stage 2: exposed bone with pain and infection. Stage 3: stage 2 plus extension beyond the alveolar bone, pathologic fracture, extraoral fistula, or similar.','1 quiet, 2 infected, 3 spreading.'],
+['surg','What is the best initial management?',['Antimicrobial rinse such as chlorhexidine, patient education, and close follow-up','Extensive resection with immediate reconstruction','Extract the nearby teeth to prevent spread','Tell her to stop her cancer treatment'],'Stage 1 is usually managed conservatively with antimicrobial rinses and monitoring, in coordination with the oncologist. Any change to cancer therapy is the oncologist’s call.','Stage 1: rinse, watch, and talk to the oncologist.']]},
+{t:'Periodontitis in a smoker',box:[['Patient','45-year-old man'],['Chief complaint','“My gums bleed a little and some teeth feel loose.”'],['Social history','Smokes 20 cigarettes a day for 25 years'],['Medical history','None'],['Findings','28 teeth present, none lost to periodontitis. Generalized probing depths of 5–7 mm; worst interproximal CAL 6 mm. Light bleeding on probing.'],['Radiographs','Generalized horizontal bone loss to the middle third of the roots']],qs:[
+['perio','What is his diagnosis under the 2017 classification?',['Generalized periodontitis, Stage III, Grade C','Localized periodontitis, Stage II, Grade A','Generalized periodontitis, Stage IV, Grade B','Generalized periodontitis, Stage I, Grade C'],'CAL of 5 mm or more, bone loss into the middle third, probing depths of 6 mm or more, and no tooth loss beyond 4 teeth = Stage III (Stage IV adds complexity such as 5 or more teeth lost or fewer than 20 remaining). Smoking 10 or more cigarettes a day makes it Grade C. More than 30% of teeth involved = generalized.','Severity sets the stage; cigarettes set the grade.'],
+['perio','Why might bleeding on probing look milder than his disease suggests?',['Nicotine-related vasoconstriction masks gingival inflammation','Smoking reverses gingivitis','His bone loss is no longer active','Smoke kills periodontal pathogens'],'Smokers often show less bleeding and redness despite significant disease, so clinical signs underestimate severity. Smoking also impairs healing and the response to therapy.','Smokers bleed less but lose more.'],
+['perio','What single step will most improve his prognosis?',['Smoking cessation counseling and support','Systemic antibiotics alone','Switching to a hard toothbrush','Full-mouth extractions'],'Smoking is the strongest modifiable risk factor for periodontitis and poor treatment outcomes. Use Ask, Advise, Refer alongside scaling and root planing.','Ask, Advise, Refer.']]},
+{t:'Dental care during pregnancy',box:[['Patient','29-year-old woman, 24 weeks pregnant'],['Chief complaint','“This tooth hurts when I drink something cold.”'],['Medical history','Uncomplicated pregnancy; prenatal vitamins'],['Findings','Deep caries on #30 with reversible pulpitis'],['During treatment','While reclined, she says she feels lightheaded and nauseated.']],qs:[
+['surg','What should you do first?',['Roll her onto her left side','Raise her legs above her head','Give epinephrine 0.3 mg IM','Have her breathe into a paper bag'],'This is supine hypotensive syndrome: the uterus compresses the inferior vena cava and reduces venous return. Turning her to the left, or wedging a pillow under her right hip, relieves it.','Pregnant and faint? Lean left.'],
+['pharm','Which analgesic is preferred if she needs one?',['Acetaminophen','Ibuprofen','Naproxen','Aspirin'],'Acetaminophen is the analgesic of choice in pregnancy. The FDA advises avoiding NSAIDs from about 20 weeks on because of fetal kidney problems and low amniotic fluid; later in pregnancy they can also close the ductus arteriosus early.','Pregnancy pain: acetaminophen.'],
+['surg','Which statement about her care is correct?',['Needed treatment, lidocaine with epinephrine, and diagnostic radiographs are all acceptable','All dental care must wait until after delivery','Local anesthetic with epinephrine is contraindicated','Radiographs are never allowed during pregnancy'],'The second trimester is the ideal time for routine care. Lidocaine with epinephrine is acceptable, and radiographs can be taken when diagnostically needed. Delaying needed treatment risks infection, which is worse for the pregnancy.','Second trimester = sweet spot.']]},
+{t:'Cardiac patient with a recent stent',box:[['Patient','67-year-old man'],['Chief complaint','Fractured lower molar; extraction of #31 planned'],['Medical history','Myocardial infarction 5 months ago treated with a drug-eluting coronary stent; hypertension'],['Medications','Aspirin 81 mg, clopidogrel 75 mg, atorvastatin, lisinopril'],['Vitals','BP 132/80 mm Hg, pulse 68'],['Functional status','No chest pain; climbs two flights of stairs without symptoms']],qs:[
+['surg','What should you do about his antiplatelet drugs?',['Continue both and control bleeding locally','Stop clopidogrel 7 days before','Stop both drugs 5 days before','Switch him to warfarin'],'Stopping dual antiplatelet therapy early after a drug-eluting stent risks stent thrombosis, which can be fatal. Extraction bleeding is usually controllable with local measures, and any change is the cardiologist’s decision.','Stents beat sockets: keep the antiplatelets.'],
+['pharm','A common conservative limit on epinephrine for patients with significant cardiovascular disease is:',['0.04 mg, about two cartridges of 1:100,000','0.2 mg, about eleven cartridges','0.4 mg','There is no limit'],'The “cardiac dose” of 0.04 mg per appointment is widely used. One 1.8 mL cartridge of 1:100,000 holds 0.018 mg, so that’s about two cartridges. The healthy-adult maximum is 0.2 mg. Aspirate and inject slowly.','Cardiac = 0.04 mg = two carpules.'],
+['surg','Climbing two flights of stairs without symptoms means he:',['Has at least 4 METs of functional capacity and can generally tolerate routine dental care','Has unstable angina','Shouldn’t receive any dental care','Is in class IV heart failure'],'Two flights of stairs is about 4 METs. Patients who can manage 4 METs or more without symptoms generally tolerate routine dental procedures well.','Two flights = 4 METs = OK to treat.']]},
+{t:'Swelling in the lower right',box:[['Patient','38-year-old woman'],['Chief complaint','Throbbing pain in the lower right for 2 days, now with swelling'],['Medical history','None; no known allergies'],['Vitals','Temperature 98.6°F (37.0°C), pulse 76'],['Findings','#30 has a large carious lesion, no response to cold, and is very tender to percussion. Localized fluctuant swelling in the buccal vestibule. No facial swelling, trismus, or trouble swallowing.'],['Radiograph','Periapical radiolucencies at both roots of #30']],qs:[
+['endo','What is the diagnosis?',['Pulp necrosis with acute apical abscess','Symptomatic irreversible pulpitis with normal apical tissues','Reversible pulpitis','Periodontal abscess on a vital tooth'],'No response to cold indicates a necrotic pulp. Rapid onset of pain and fluctuant swelling indicate an acute apical abscess, and the radiolucencies confirm periapical involvement.','No cold response + swelling = necrosis with abscess.'],
+['endo','Are systemic antibiotics indicated today?',['No; drain the swelling and start definitive treatment (RCT or extraction)','Yes; antibiotics alone for 10 days before any treatment','Yes; every apical abscess needs antibiotics','Only a topical antibiotic in the canal'],'The 2019 ADA guideline: for a localized abscess without systemic signs (fever, malaise, spreading swelling, trismus), antibiotics are not recommended. Source control with incision and drainage plus pulpal debridement or extraction is the treatment.','Source control first. Antibiotics only for systemic spread.'],
+['pharm','If she later develops fever and spreading swelling, the first-line oral antibiotic is:',['Amoxicillin 500 mg three times a day','Clindamycin 300 mg four times a day','Metronidazole alone','A single dose of doxycycline'],'Amoxicillin or penicillin VK is first line for odontogenic infections, usually for 3–7 days with reassessment. For penicillin allergy, options include cephalexin (if no history of anaphylaxis), azithromycin, or clindamycin. If there’s no improvement, metronidazole can be added.','Odontogenic infection: amoxicillin first.']]},
+{t:'Sore mouth under a denture',box:[['Patient','74-year-old woman'],['Chief complaint','“My mouth feels sore under my upper denture.”'],['History','Wears complete dentures day and night; dentures are 15 years old'],['Medical history','Type 2 diabetes'],['Findings','Diffuse redness of the palate outlined exactly by the denture base. Folds of soft, redundant tissue in the mandibular anterior vestibule where the flange rests. Cracking and redness at both corners of the mouth.']],qs:[
+['path','What is the palatal lesion?',['Denture stomatitis (chronic atrophic candidiasis)','Pseudomembranous candidiasis','Erythroplakia','Nicotine stomatitis'],'Redness confined to the denture-bearing area in a patient who wears dentures continuously is classic denture stomatitis, usually Candida-associated. Diabetes adds risk.','Red where the denture sits = denture stomatitis.'],
+['pros','The folds of tissue in the anterior vestibule are most likely:',['Epulis fissuratum from an overextended flange','Squamous cell carcinoma','A mucocele','A pyogenic granuloma'],'Epulis fissuratum is reactive fibrous hyperplasia caused by an ill-fitting, overextended flange. Reduce the flange; excise and biopsy if it doesn’t resolve.','Flange too long → tissue folds.'],
+['pros','What is the most important management step?',['Leave the dentures out at night, clean them daily, and use a topical antifungal','Prescribe systemic antibiotics','Add a soft liner and keep wearing them around the clock','Biopsy the entire palate'],'Removing dentures overnight, cleaning them, and treating both tissue and denture with an antifungal such as nystatin resolve most cases. Her old dentures likely need relining or replacement, which also fixes the lost vertical dimension behind her angular cheilitis.','Dentures need a bedtime too.']]},
+{t:'Radiolucency around an impacted molar',box:[['Patient','24-year-old man'],['Chief complaint','Referred after a routine panoramic image; no symptoms'],['Medical history','None'],['Panoramic image','A 3 cm well-defined unilocular radiolucency around the crown of impacted #17, attached at its CEJ. The roots of #17 look darker where the mandibular canal crosses them, and the white borders of the canal are interrupted.']],qs:[
+['path','What is the most likely diagnosis?',['Dentigerous cyst','Radicular cyst','Lateral periodontal cyst','Stafne bone defect'],'A pericoronal radiolucency attached at the CEJ of an unerupted tooth suggests a dentigerous cyst. An odontogenic keratocyst or unicystic ameloblastoma can look the same, which is why tissue must go for histopathology.','Holds the crown at the CEJ = dentigerous.'],
+['surg','What is the appropriate treatment?',['Remove #17, enucleate the lesion, and send the tissue for biopsy','Observe with yearly radiographs','Marsupialize and leave the tooth in place permanently','Root canal treatment of #18'],'Removing the tooth and enucleating the cyst is standard; very large lesions may be decompressed first. Histopathology rules out OKC or ameloblastoma.','Every cyst wall goes to the pathologist.'],
+['surg','What do the described root and canal signs suggest?',['The roots are close to the inferior alveolar canal','The tooth is ankylosed','The cyst is malignant','Normal anatomy with no added risk'],'Darkening of the root, interruption of the canal’s white lines, and diversion or narrowing of the canal suggest a close relationship with the nerve. Consider CBCT and discuss the risk of lower lip and chin numbness.','Dark root + broken white line = nerve nearby.']]},
+{t:'Early childhood caries',box:[['Patient','3-year-old girl'],['Chief complaint','“Her front teeth are turning brown.”'],['History','Falls asleep with a bottle of apple juice most nights; community water isn’t fluoridated'],['Medical history','Healthy'],['Findings','Cavitated lesions on the facial and lingual surfaces of the maxillary incisors and on multiple surfaces of the primary first molars. Mandibular incisors are caries-free. Cooperates for short periods.']],qs:[
+['peds','What is her caries risk and the best in-office preventive measure?',['High risk; fluoride varnish every 3 months','Low risk; brushing alone is enough','Moderate risk; sealants only','Low risk; recall in 12 months'],'Active cavitated lesions, a nighttime bottle of juice, and no community fluoride make her high risk. AAPD recommends 5% sodium fluoride varnish every 3 months for high-risk children, along with diet counseling.','High risk = varnish every 3 months.'],
+['peds','What is the best restoration for primary molars with decay on several surfaces?',['Stainless steel crowns','Multi-surface amalgams','Sealants','Extraction of all affected molars'],'Stainless steel crowns are the most durable restoration for multisurface caries in primary molars, especially in high-risk children.','Many surfaces in a baby molar = steel crown.'],
+['peds','Which agent can arrest the incisor lesions without drilling, if her parents accept black staining?',['38% silver diamine fluoride','2% chlorhexidine gel','Calcium hydroxide','35% hydrogen peroxide'],'SDF arrests cavitated caries, and arrested lesions turn black. It’s useful for young or uncooperative children and is usually reapplied over time. Silver allergy is a contraindication.','SDF stops decay and stains it black.']]},
+{t:'Extraction after head and neck radiation',box:[['Patient','61-year-old man'],['Chief complaint','Painful broken tooth #30'],['Medical history','Squamous cell carcinoma of the tongue treated 3 years ago with surgery and 66 Gy of radiation that included the mandible'],['Findings','Very dry mouth, multiple cervical caries, #30 nonrestorable']],qs:[
+['path','What is the greatest risk of extracting #30?',['Osteoradionecrosis','MRONJ','Ludwig’s angina','Pleomorphic adenoma'],'High-dose radiation, especially above 60 Gy to the mandible, leaves bone hypovascular, hypocellular, and hypoxic, so it heals poorly after trauma. The risk is lifelong. Extract as atraumatically as possible and coordinate with the radiation oncologist.','Radiated bone = hypo, hypo, hypo.'],
+['bio','What mainly causes his rapid cervical caries?',['Radiation-induced loss of salivary flow','Radiation turning enamel into fluorapatite','Too much fluoride','Bruxism'],'Radiation damages the salivary glands, so buffering, clearance, and remineralization are lost. Radiation caries spreads fast along cervical and incisal areas.','No saliva, no defense.'],
+['resto','What is the best daily caries prevention for him?',['Daily high-concentration fluoride, such as 1.1% NaF gel in custom trays','Avoiding fluoride entirely','Chlorhexidine once a week only','Sealants alone'],'Lifelong daily home fluoride (1.1% NaF gel or 5,000 ppm toothpaste, often in custom trays), saliva substitutes, frequent recalls, and diet control.','Dry mouth = fluoride every single day.'],
+['surg','Ideally, how long before radiation should needed extractions be done?',['At least 2 weeks','1 day','6 months','They should wait until after radiation'],'Allowing about 2–3 weeks of healing before radiation begins lowers the risk of osteoradionecrosis.','Extract early: 2 weeks before the beam.']]},
+{t:'Partial denture design',box:[['Patient','63-year-old man'],['Chief complaint','Wants to replace missing lower back teeth'],['Medical history','Controlled hypertension'],['Findings','Missing #17–20 and #29–32. #21–28 present and periodontally sound. Distance from the lingual gingival margin to the floor of the mouth is 6 mm. Maxillary arch fully dentate.']],qs:[
+['pros','What is the Kennedy classification?',['Class I','Class II','Class III','Class IV'],'Bilateral edentulous areas posterior to the remaining teeth = Kennedy Class I, with no modification spaces here.','Both backs open = Class I.'],
+['pros','In an RPI design, where should the rests on #21 and #28 be placed?',['Mesial occlusal','Distal occlusal','Cingulum','Incisal'],'In the RPI system the rest is mesial. When the distal extension base is loaded, the denture rotates around the mesial rest and the proximal plate and I-bar move away from the tooth, reducing torque on the abutment.','RPI: rest goes mesial.'],
+['pros','With only 6 mm from the gingival margin to the floor of the mouth, the best major connector is a:',['Lingual plate','Lingual bar','Labial bar','Palatal strap'],'A lingual bar needs roughly 7–8 mm of vertical space (the bar itself plus clearance from the gingival margin). With less space, use a lingual plate.','Under 8 mm? Use a plate.']]}
+];
+CASES.forEach((c,ci)=>c.qs.forEach(q=>Q.push([...q,ci])));
+
 /* ---------- storage ---------- */
 const KEY="boardbite-v1";
 function load(){
@@ -406,9 +485,10 @@ function home(){
     h("section",{class:"modes"},
       modeRow("Arcade run",`15 questions and 3 teeth to lose. Streaks multiply points; answer within 10 seconds for a bonus.${best.arcade?` Best: ${best.arcade.toLocaleString()} pts.`:""}`,"Play",()=>startArcade(idsFor()),none),
       modeRow("Flash recall","20 cards, weakest first. Think of the answer, flip, then mark whether you knew it.","Study",()=>startFlash(idsFor()),none),
-      modeRow("Match-up",`Pair 6 classic buzzwords with their answers. Each wrong pair adds 3 seconds.${best.match?` Best: ${best.match.toFixed(1)} s.`:""}`,"Match",startMatch,false)
+      modeRow("Match-up",`Pair 6 classic buzzwords with their answers. Each wrong pair adds 3 seconds.${best.match?` Best: ${best.match.toFixed(1)} s.`:""}`,"Match",startMatch,false),
+      modeRow('Exam mode','Timed practice exams with patient-box case sets, no feedback until you submit, and a score report by topic.','Set up',examHome,false)
     ),
-    h("p",{class:"note"},"Original practice questions written from standard dental references to mirror INBDE content areas. They aren’t official JCNDE items, and the real exam is case-based, so pair this with the official JCNDE sample questions. Keyboard: 1–4 to answer, Enter to continue, Space to flip."),
+    h("p",{class:"note"},"Original practice questions written from standard dental references to mirror INBDE content areas. They aren’t official JCNDE items, and the real exam is case-based, so pair this with the official JCNDE sample questions. Keyboard: 1–4 to answer, Enter to continue, Space to flip. In Exam mode, arrow keys move between questions and F flags one."),
     h("button",{type:"button",class:"linkbtn",onclick:(e)=>{
       if(!resetArmed){resetArmed=true;e.target.textContent="Tap again to erase all progress";return;}
       store={boxes:{},best:{},cats:[...selected]};save();prevFilled=-1;renderArch();home();
@@ -483,7 +563,7 @@ function runArcade(run){
   app.append(
     h("div",{class:"hud"},livesEl,scoreEl,streakEl),speed,
     h("div",{class:"meta"},h("span",{},CATS[cat]),h("span",{},`${run.idx+1} of ${run.pool.length}`)),
-    h("p",{class:"qtext"},q),optsEl,fb
+    caseBox(id),h("p",{class:"qtext"},q),optsEl,fb
   );
 }
 function arcadeResults(run){
@@ -532,13 +612,13 @@ function runFlash(st){
   const actions=h("div",{class:"actions"});
   let flipped=false;
   function front(){
-    card.replaceChildren(h("p",{class:"qtext"},q));
+    card.replaceChildren(caseBox(id),h("p",{class:"qtext"},q));
     const btn=h("button",{type:"button",class:"btn",onclick:flip},"Show answer");
     actions.replaceChildren(btn);
   }
   function flip(){
     if(flipped)return;flipped=true;
-    card.replaceChildren(h("p",{class:"qtext",style:"font-size:1.1rem;color:var(--muted)"},q),h("div",{class:"answer"},opts[0]),h("p",{style:"margin:0"},expl),hookBox(hook));
+    card.replaceChildren(caseBox(id),h("p",{class:"qtext",style:"font-size:1.1rem;color:var(--muted)"},q),h("div",{class:"answer"},opts[0]),h("p",{style:"margin:0"},expl),hookBox(hook));
     const miss=h("button",{type:"button",class:"btn ghost",onclick:()=>grade(false)},"Missed it");
     const knew=h("button",{type:"button",class:"btn",onclick:()=>grade(true)},"Knew it");
     actions.replaceChildren(miss,knew);knew.focus({preventScroll:true});
@@ -595,6 +675,102 @@ function startMatch(){
   }
   app.append(h("div",{class:"hud"},clock,missEl),h("p",{class:"lede",style:"margin:8px 0 0"},"Tap a term, then its match."),h("div",{class:"match"},L,R),
     h("div",{class:"actions",style:"justify-content:flex-start"},h("button",{type:"button",class:"linkbtn",onclick:home},"Quit")));
+}
+
+/* ---------- exam mode ---------- */
+const PACE=75;
+function caseBox(id){
+  const ci=Q[id][5];if(ci==null)return null;const c=CASES[ci];
+  return h('div',{class:'pbox'},h('div',{class:'pbox-title'},'Patient box: '+c.t),h('dl',{},c.box.map(([k,v])=>[h('dt',{},k),h('dd',{},v)]).flat()));
+}
+function fmtTime(ms){const s=Math.max(0,Math.ceil(ms/1000));const hr=Math.floor(s/3600),m=Math.floor(s%3600/60),sec=s%60;return (hr?hr+':'+String(m).padStart(2,'0'):String(m))+':'+String(sec).padStart(2,'0');}
+function examHome(){
+  reset();const app=$('#app');app.replaceChildren();
+  const nCases=CASES.reduce((n,c)=>n+c.qs.length,0);
+  app.append(
+    h('h1',{},'Exam mode.'),
+    h('p',{class:'lede'},`Timed like test day: patient-box case sets mixed with standalone questions, and no feedback until you submit. You get ${PACE} seconds per question, and you can flag questions to come back to. The pool has ${Q.length} questions, ${nCases} of them case-based.`),
+    h('section',{class:'modes'},[25,50,100].map(n=>{const b=store.best['exam'+n];return modeRow(`${n} questions`,`${Math.round(n*PACE/60)} minutes.${b!=null?` Best: ${b}%.`:''}`,'Start',()=>startExam(n),false);})),
+    h('p',{class:'note'},'The INBDE reports pass or fail from a scaled score, so there’s no official percentage to aim for. Use the topic breakdown at the end to decide what to study next.'),
+    h('button',{type:'button',class:'linkbtn',onclick:home},'Back to home')
+  );
+}
+function buildExam(n){
+  const byCase={};Q.forEach((q,i)=>{if(q[5]!=null)(byCase[q[5]]=byCase[q[5]]||[]).push(i);});
+  const singles=shuffle(Q.map((_,i)=>i).filter(i=>Q[i][5]==null));
+  const cap=Math.round(n*0.35);const units=[];let count=0;
+  for(const k of shuffle(Object.keys(byCase))){const set=byCase[k];if(count+set.length>cap)continue;units.push(set);count+=set.length;}
+  while(count<n&&singles.length){units.push([singles.pop()]);count++;}
+  return shuffle(units).flat();
+}
+function startExam(n){
+  reset();
+  const items=buildExam(n);const now=Date.now();
+  const ex={n,items,orders:items.map(id=>shuffle(Q[id][2].map((t,k)=>({t,ok:k===0})))),ans:{},flags:new Set(),cur:0,start:now,end:now+items.length*PACE*1000,confirming:false,quitArmed:false,done:false};
+  timers.push(setInterval(()=>{const left=ex.end-Date.now();const el=document.getElementById('examClock');if(el){el.textContent=fmtTime(left);el.classList.toggle('low',left<300000);}if(left<=0)submitExam(ex,true);},1000));
+  renderExam(ex,true);
+}
+function renderExam(ex,scroll){
+  if(ex.done)return;
+  const app=$('#app');app.replaceChildren();if(scroll)window.scrollTo(0,0);
+  const id=ex.items[ex.cur];const order=ex.orders[ex.cur];const total=ex.items.length;
+  const answered=Object.keys(ex.ans).length;const unanswered=total-answered;const flagged=ex.flags.has(ex.cur);
+  const go=i=>{ex.cur=i;ex.confirming=false;ex.quitArmed=false;renderExam(ex,true);};
+  const toggleFlag=()=>{flagged?ex.flags.delete(ex.cur):ex.flags.add(ex.cur);renderExam(ex,false);};
+  const askSubmit=()=>{ex.confirming=true;renderExam(ex,true);};
+  const opts=h('div',{class:'options'});
+  order.forEach((o,k)=>opts.append(h('button',{type:'button',class:'opt'+(ex.ans[ex.cur]===k?' chosen':''),'aria-pressed':ex.ans[ex.cur]===k?'true':'false',onclick:()=>{ex.ans[ex.cur]=k;renderExam(ex,false);}},h('span',{class:'key'},'ABCD'[k]),h('span',{},o.t))));
+  app.append(
+    h('div',{class:'hud'},h('div',{class:'score'},h('span',{class:'num',id:'examClock'},fmtTime(ex.end-Date.now())),'left'),h('div',{class:'score'},`${answered} of ${total} answered`)),
+    ex.confirming?h('div',{class:'confirm'},h('p',{style:'margin:0 0 10px'},unanswered?`${unanswered} unanswered${ex.flags.size?` and ${ex.flags.size} flagged`:''}. Unanswered questions count as wrong.`:(ex.flags.size?`Everything is answered; ${ex.flags.size} still flagged.`:'Everything is answered.')),h('div',{class:'row'},h('button',{type:'button',class:'btn',onclick:()=>submitExam(ex,false)},'Submit exam'),h('button',{type:'button',class:'btn ghost',onclick:()=>{ex.confirming=false;renderExam(ex,false);}},'Keep working'))):null,
+    h('div',{class:'meta'},h('span',{},`Question ${ex.cur+1} of ${total}`),h('button',{type:'button',class:'linkbtn',onclick:toggleFlag},flagged?'Remove flag':'Flag for review')),
+    caseBox(id),h('p',{class:'qtext'},Q[id][1]),opts,
+    h('div',{class:'actions'},h('button',{type:'button',class:'btn ghost',disabled:ex.cur===0,onclick:()=>go(ex.cur-1)},'Previous'),ex.cur<total-1?h('button',{type:'button',class:'btn',onclick:()=>go(ex.cur+1)},'Next'):h('button',{type:'button',class:'btn',onclick:askSubmit},'Finish')),
+    h('h2',{style:'margin-top:30px'},'Question map'),
+    h('div',{class:'qnav'},ex.items.map((_,i)=>h('button',{type:'button',class:'qn'+(i===ex.cur?' cur':'')+(ex.ans[i]!=null?' ans':'')+(ex.flags.has(i)?' flag':''),'aria-label':`Question ${i+1}${ex.ans[i]!=null?', answered':''}${ex.flags.has(i)?', flagged':''}`,onclick:()=>go(i)},i+1))),
+    h('p',{class:'note',style:'margin-top:10px'},'Shaded squares are answered. A gold dot means flagged.'),
+    h('div',{class:'actions',style:'justify-content:flex-start'},h('button',{type:'button',class:'btn ghost',onclick:askSubmit},'Submit exam'),h('button',{type:'button',class:'linkbtn',onclick:()=>{if(ex.quitArmed){ex.done=true;home();}else{ex.quitArmed=true;renderExam(ex,false);}}},ex.quitArmed?'Tap again to quit without scoring':'Quit'))
+  );
+  keyHandler=e=>{
+    if(['1','2','3','4'].includes(e.key)){ex.ans[ex.cur]=+e.key-1;renderExam(ex,false);}
+    else if(e.key==='ArrowRight'&&ex.cur<total-1)go(ex.cur+1);
+    else if(e.key==='ArrowLeft'&&ex.cur>0)go(ex.cur-1);
+    else if(e.key==='f'||e.key==='F')toggleFlag();
+  };
+}
+function submitExam(ex,timeUp){
+  if(ex.done)return;ex.done=true;reset();
+  const total=ex.items.length;let correct=0;const topics={};
+  const rows=ex.items.map((id,i)=>{const a=ex.ans[i];const ok=a!=null&&ex.orders[i][a].ok;if(ok)correct++;if(a!=null)mark(id,ok);const c=Q[id][0];topics[c]=topics[c]||{n:0,ok:0};topics[c].n++;if(ok)topics[c].ok++;return {id,i,a,ok};});
+  const pct=Math.round(correct/total*100);
+  const key='exam'+ex.n;const prev=store.best[key];const isBest=prev==null||pct>prev;if(isBest){store.best[key]=pct;save();}
+  const used=Math.min(Date.now(),ex.end)-ex.start;
+  let showAll=false;const list=h('ul',{class:'missed'});
+  function paintList(){
+    list.replaceChildren(...rows.filter(r=>showAll||!r.ok).map(r=>{const [cat,q,opts,expl,hook]=Q[r.id];return h('li',{},
+      h('div',{class:'meta',style:'margin:0 0 6px'},h('span',{},`Question ${r.i+1}`),h('span',{},CATS[cat])),
+      Q[r.id][5]!=null?h('details',{},h('summary',{},'Show patient box'),caseBox(r.id)):null,
+      h('div',{style:'font-weight:700;margin:6px 0'},q),
+      r.ok?null:h('div',{class:'yours'},r.a==null?'Not answered':`Your answer: ${ex.orders[r.i][r.a].t}`),
+      h('div',{class:'a'},`Correct: ${opts[0]}`),
+      h('p',{style:'margin:6px 0 0'},expl),hookBox(hook));}));
+    if(!list.children.length)list.append(h('li',{},'Nothing missed. Switch to all questions to review anyway.'));
+  }
+  const toggle=h('button',{type:'button',class:'linkbtn',onclick:()=>{showAll=!showAll;toggle.textContent=showAll?'Show missed only':'Show all questions';paintList();}},'Show all questions');
+  const trows=Object.entries(topics).map(([k,v])=>({k,v,p:Math.round(v.ok/v.n*100)})).sort((a,b)=>a.p-b.p);
+  const misses=rows.filter(r=>!r.ok).map(r=>r.id);
+  $('#app').replaceChildren(
+    h('h1',{},timeUp?'Time’s up.':'Exam scored.'),
+    h('div',{class:'big'},`${pct}%`),
+    isBest?h('span',{class:'badge'},`New best for ${ex.n} questions`):null,
+    h('div',{class:'stats'},h('div',{},h('b',{},`${correct}/${total}`),'correct'),h('div',{},h('b',{},fmtTime(used)),'time used'),h('div',{},h('b',{},total-Object.keys(ex.ans).length),'unanswered')),
+    h('h2',{style:'margin-top:28px'},'By topic, weakest first'),
+    h('div',{class:'topics'},trows.map(t=>h('div',{class:'trow'+(t.p<70?' weak':'')},h('span',{},CATS[t.k]),h('div',{class:'tbar'},h('i',{style:`width:${t.p}%`})),h('span',{},`${t.v.ok}/${t.v.n}`)))),
+    h('div',{class:'actions',style:'justify-content:flex-start'},h('button',{type:'button',class:'btn',onclick:()=>startExam(ex.n)},'New exam'),misses.length?h('button',{type:'button',class:'btn ghost',onclick:()=>startFlashIds(misses)},'Study misses as cards'):null,h('button',{type:'button',class:'btn ghost',onclick:home},'Home')),
+    h('div',{class:'row',style:'justify-content:space-between;margin-top:30px'},h('h2',{style:'margin:0'},'Review'),toggle),
+    list
+  );
+  window.scrollTo(0,0);paintList();
 }
 
 $("#brand").addEventListener("click",home);
